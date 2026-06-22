@@ -4,7 +4,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
-import app.morphe.util.findMutableMethodOf
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -37,10 +36,10 @@ val bypassSamsungAccountSignatureCheckPatch = resourcePatch(
         bytecodePatch {
             execute {
                 classDefForEach { classDef ->
-                    classDef.methods.forEach { method ->
-                        val implementation = method.implementation ?: return@forEach
-                        val mutableClass = mutableClassDefBy(classDef)
-                        val mutableMethod = mutableClass.findMutableMethodOf(method)
+                    val mutableClass = mutableClassDefBy(classDef)
+                    classDef.methods.forEachIndexed { methodIndex, method ->
+                        val implementation = method.implementation ?: return@forEachIndexed
+                        val mutableMethod = mutableClass.methods[methodIndex]
 
                         implementation.instructions.forEachIndexed { index, instruction ->
                             if (instruction.opcode != Opcode.CONST_STRING) return@forEachIndexed
