@@ -1,3 +1,11 @@
+## [1.0.12](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.11...v1.0.12) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* add BytecodePatchContext to stub helper functions ([33ae16d](https://github.com/bigyank/morphe-patches-samsung/commit/33ae16dcccc574b9ac5f033c208b7a8918e59b5e))
+* use BytecodePatchContext extensions for stub helpers ([8cea61c](https://github.com/bigyank/morphe-patches-samsung/commit/8cea61c0d78d8b3d50ba91e0287e6d02a36fd3d7))
+* use Morphe MutableMethod APIs in BytecodeStubUtils ([3dcf337](https://github.com/bigyank/morphe-patches-samsung/commit/3dcf33731e54e30dd9b2c407a9f38f0c526ed396))
+
 ## [1.0.11](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.10...v1.0.11) (2026-06-22)
 
 ### 🐛 Bug Fixes
