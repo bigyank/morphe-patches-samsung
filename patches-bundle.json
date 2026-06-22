@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-06-22T13:04:12",
-  "description": "## [1.0.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.0...v1.0.1) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* drop dev backmerge from semantic-release config ([d900692](https://github.com/bigyank/morphe-patches-samsung/commit/d90069234222e823cd0a35033c951073b73efba5))",
-  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.1/patches-1.0.1.mpp",
+  "created_at": "2026-06-22T13:13:23",
+  "description": "## [1.0.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.1...v1.0.2) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* correct isKnoxAvailableCore access flags for Health 6.32 ([0804fa6](https://github.com/bigyank/morphe-patches-samsung/commit/0804fa65269e37b15261c39697773e51a722f447))\n* restore inline MutableMethod stubs for Morphe compile ([9bf0a06](https://github.com/bigyank/morphe-patches-samsung/commit/9bf0a06fa3fc3baf993e2862196f8f7113bbc4f4))",
+  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.2/patches-1.0.2.mpp",
   "signature_download_url": "",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

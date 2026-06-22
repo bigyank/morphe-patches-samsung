@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.1...v1.0.2) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* correct isKnoxAvailableCore access flags for Health 6.32 ([0804fa6](https://github.com/bigyank/morphe-patches-samsung/commit/0804fa65269e37b15261c39697773e51a722f447))
+* restore inline MutableMethod stubs for Morphe compile ([9bf0a06](https://github.com/bigyank/morphe-patches-samsung/commit/9bf0a06fa3fc3baf993e2862196f8f7113bbc4f4))
+
 ## [1.0.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.0...v1.0.1) (2026-06-22)
 
 ### 🐛 Bug Fixes
