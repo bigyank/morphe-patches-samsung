@@ -7,13 +7,28 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11n
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
 
 private fun MutableMethodImplementation.clearExceptionHandlers() {
     val tryBlocksField = MutableMethodImplementation::class.java.getDeclaredField("tryBlocks")
     tryBlocksField.isAccessible = true
     @Suppress("UNCHECKED_CAST")
     (tryBlocksField.get(this) as java.util.ArrayList<*>).clear()
+}
+
+private fun macStyleStubImplementation(registerCount: Int, returnObject: Boolean): MutableMethodImplementation {
+    return MutableMethodImplementation(registerCount).apply {
+        addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 0))
+        addInstruction(
+            BuilderInstruction11x(
+                if (returnObject) Opcode.RETURN_OBJECT else Opcode.RETURN,
+                0,
+            ),
+        )
+    }
 }
 
 /**
@@ -46,8 +61,7 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
                 }
                 val returnInsn = if (returnObject) "return-object v0" else "return v0"
                 val stubBody = "const/4 v0, 0x0\n$returnInsn"
-                val freshImpl = MutableMethodImplementation(registerCount)
-                freshImpl.addInstructions(0, stubBody)
+                val freshImpl = macStyleStubImplementation(registerCount, returnObject)
 
                 val replaced = runCatching {
                     val field = javaClass.getDeclaredField("implementation")
@@ -59,8 +73,8 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
                 if (!replaced) {
                     implementation?.let { impl ->
                         impl.clearExceptionHandlers()
-                        impl.removeInstructions(0, impl.instructions.count())
-                        impl.addInstructions(0, stubBody)
+                        removeInstructions(0, impl.instructions.count())
+                        addInstructions(0, stubBody)
                     }
                 }
             }
