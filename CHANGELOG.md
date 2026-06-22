@@ -1,3 +1,49 @@
+## 1.0.0 (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* add BytecodePatchContext to stub helper functions ([b80232f](https://github.com/bigyank/morphe-patches-samsung/commit/b80232fa427a10e784008da91ada90483795eb5b))
+* add Morphe 1.3.x compatible PatchListGenerator ([2f03f43](https://github.com/bigyank/morphe-patches-samsung/commit/2f03f43582a8f5a4e6779bc53673870ee9f1ffe7))
+* add Samsung Account signature bypass for patched Health login ([d85f461](https://github.com/bigyank/morphe-patches-samsung/commit/d85f461fdd63005ce0cf882e07b98ec484a088e4))
+* align Morphe plugin API with 1.3.x for CI build ([0fbc194](https://github.com/bigyank/morphe-patches-samsung/commit/0fbc194c7b600f8cb71f5d0c48abea82c24da2a9))
+* avoid sl9 SAK stub that caused startup VerifyError ([d3067ee](https://github.com/bigyank/morphe-patches-samsung/commit/d3067ee30856b5b1e5ca43ff680f8f3aed6eb42e))
+* build Mac-style stubs with dexlib2 instruction builders ([75f486e](https://github.com/bigyank/morphe-patches-samsung/commit/75f486e80e1cd4eb64d53feeeff82abdfb3a30ca))
+* clear try/catch handlers when stubbing Knox methods ([eea561d](https://github.com/bigyank/morphe-patches-samsung/commit/eea561d780fdbe22a7f5b21175f39528f34d056f))
+* compile account patch by storing replacement strings during scan ([84a1cc7](https://github.com/bigyank/morphe-patches-samsung/commit/84a1cc76241c49fe7e377379344e02d45cfaca43))
+* compile account provider stubs using reflection like Knox patch ([b2d975c](https://github.com/bigyank/morphe-patches-samsung/commit/b2d975ca14329a6461ce8556213e3f8b8e0f69a8))
+* compile Mac-style stubs inside execute context ([17fadfd](https://github.com/bigyank/morphe-patches-samsung/commit/17fadfdf51803c961a1a7798db8297843ecd38d8))
+* correct isKnoxAvailableCore access flags for Health 6.32 ([0f52b91](https://github.com/bigyank/morphe-patches-samsung/commit/0f52b91130c70a7afa593bea9a887b1e567e6b05))
+* dex-only account bypass with provider stubs to avoid OOM loop ([a804e5c](https://github.com/bigyank/morphe-patches-samsung/commit/a804e5c982de547b4a96c1bbbd1a2f1b980b3bf4))
+* downgrade Gradle to 8.14.3 for Morphe plugin compatibility ([4a4b4d6](https://github.com/bigyank/morphe-patches-samsung/commit/4a4b4d667ad30b668a0b46b21ba6c2350a3b802f))
+* drop dev backmerge from semantic-release config ([6ad1c29](https://github.com/bigyank/morphe-patches-samsung/commit/6ad1c299daddf8c8f3792e0d13c991772fb00a5f))
+* emit patches-list.json in README-compatible format ([5a7aed0](https://github.com/bigyank/morphe-patches-samsung/commit/5a7aed090d8361f7a3cc9288826dc6aaba3ef2df))
+* inline register-aware stubs on MutableMethod apply receiver ([6c2af10](https://github.com/bigyank/morphe-patches-samsung/commit/6c2af10f82d53063aa935bdc925a22be56e7bac4))
+* iterate mutableClass.methods directly in account bypass patch ([ae60c49](https://github.com/bigyank/morphe-patches-samsung/commit/ae60c497bc7b72bba2bcf8e3bcd85b8abfa893c5))
+* keep register-safe stubs inside patch execute context ([ec64289](https://github.com/bigyank/morphe-patches-samsung/commit/ec642895c20c1f3f9459a0f13eb7ec9bdbf509f1))
+* make Samsung Account bypass dex-only to prevent Morphe OOM ([a9b64d5](https://github.com/bigyank/morphe-patches-samsung/commit/a9b64d58db48aff83b271c16d0caf1b12dfa7821))
+* match macOS apktool stubs to restore account sign-in ([efe5413](https://github.com/bigyank/morphe-patches-samsung/commit/efe541366784b4cca732f2724f097a3279c58c3b))
+* replace all Samsung Account package strings in dex like Mac patcher ([4cd36e2](https://github.com/bigyank/morphe-patches-samsung/commit/4cd36e2cbefa800a86bc9f07f5e4cd4f8c3dde4a))
+* replace method bodies fully to clear try/catch handlers ([f615f96](https://github.com/bigyank/morphe-patches-samsung/commit/f615f9627e3bb4859b9a172f3b957d8adf93838c))
+* resolve Kotlin compile errors for Morphe 1.3.x ([bedd7d1](https://github.com/bigyank/morphe-patches-samsung/commit/bedd7d107bf527bd85dabfc92c10ed108c13dbf2))
+* resolve Samsung Account patch compile error in CI ([2b1738f](https://github.com/bigyank/morphe-patches-samsung/commit/2b1738f72cd4ed6d852790f26342bb41d960f873))
+* restore inline MutableMethod stubs for Morphe compile ([78a627e](https://github.com/bigyank/morphe-patches-samsung/commit/78a627ed0dce221c36f12a313c5a24092cef3f85))
+* restore manifest/res replacement for Samsung Account bypass ([ac9268b](https://github.com/bigyank/morphe-patches-samsung/commit/ac9268bb8c230083808f075047c0de5a41f057bb))
+* scan dex read-only before mutating classes for account bypass ([a26e347](https://github.com/bigyank/morphe-patches-samsung/commit/a26e3479734fe6fb8834dcae8c124d41696488c4))
+* **shealth:** escape isRooted marker string to fix Kotlin compile ([92feff9](https://github.com/bigyank/morphe-patches-samsung/commit/92feff93fe7de68ac6da6fda60e0c8ef3d88fd18))
+* **shealth:** scan dex for OOBE Knox gates instead of obfuscated fingerprints ([6e55fca](https://github.com/bigyank/morphe-patches-samsung/commit/6e55fca553f5a4982adcff3d19a26e647c1fd0c5))
+* use BytecodePatchContext extensions for stub helpers ([eadbd24](https://github.com/bigyank/morphe-patches-samsung/commit/eadbd242420a547f076ec6d4dea08038b3432587))
+* use Morphe MutableMethod APIs in BytecodeStubUtils ([f9f4358](https://github.com/bigyank/morphe-patches-samsung/commit/f9f43581c73c13c5997250ad69c7dfa95d766aa7))
+
+### ✨ New Features
+
+* add Samsung Health Knox bypass Morphe patches ([68451b5](https://github.com/bigyank/morphe-patches-samsung/commit/68451b55084f9f1d880f8ee95a1e416b51dfaa28))
+
+### 🚀 Updated App Support
+
+* **shealth:** add isRooted dex scan and SamsungAppsPatcher audit docs ([da5d22c](https://github.com/bigyank/morphe-patches-samsung/commit/da5d22c4020f126a9b0106dd62b3a6848441f3e2))
+* **shealth:** add OOBE Knox stubs and extra SDK integrity bypasses ([cfd3b98](https://github.com/bigyank/morphe-patches-samsung/commit/cfd3b9859ab67efd3bea54679609bd0e6b05c142))
+* **shealth:** add Samsung Health 6.31.3.013 compatibility target ([e98506b](https://github.com/bigyank/morphe-patches-samsung/commit/e98506b746e284ea652f4cc4f04470e3541b4555))
+
 ## [1.0.16](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.15...v1.0.16) (2026-06-22)
 
 ### 🐛 Bug Fixes
