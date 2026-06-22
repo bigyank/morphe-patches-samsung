@@ -7,7 +7,7 @@ patches {
         source = "git@github.com:bigyank/morphe-patches-samsung.git"
         author = "bigyank"
         contact = "https://github.com/bigyank/morphe-patches-samsung/issues"
-        website = "https://github.com/bigyank/SamsungAppsPatcher"
+        website = "https://github.com/bigyank/morphe-patches-samsung"
         license = "GPLv3"
     }
 }

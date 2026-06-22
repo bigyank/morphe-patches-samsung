@@ -3,8 +3,8 @@ package app.bigyank.patches.shealth
 import app.morphe.patcher.Fingerprint
 import com.android.tools.smali.dexlib2.AccessFlags
 
-// Knox / integrity bypass fingerprints for Samsung Health 6.32.x.
-// Class names are stable Samsung SDK types (not R8-renamed app code).
+// ── Knox / integrity ─────────────────────────────────────────────────────────
+// Stable Samsung SDK types — not R8-renamed app code.
 
 object KnoxAdapterCheckKnoxCompromisedExternalFingerprint : Fingerprint(
     definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
@@ -117,6 +117,8 @@ object SamsungSakCheckerC6rFingerprint : Fingerprint(
     returnType = "Z",
     parameters = emptyList(),
 )
+
+// ── Samsung Account provider bypass ──────────────────────────────────────────
 
 object SamsungAccountUtilsIsAccountProviderSupportedFingerprint : Fingerprint(
     definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/samsungaccount/SamsungAccountUtils;",

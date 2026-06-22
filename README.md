@@ -1,20 +1,21 @@
 # Bigyank Samsung Morphe Patches
 
-Morphe patches for **Samsung Health** on Knox-tripped Samsung Galaxy phones — patch on your device with [Morphe Manager](https://morphe.software/), no PC required.
-
-Community fork of the Knox bypass logic from [bigyank/SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) (originally [adil192/SamsungAppsPatcher](https://github.com/adil192/SamsungAppsPatcher)).
+Morphe patches for **Samsung Health** on Knox-tripped Samsung Galaxy phones — patch directly on your device with [Morphe Manager](https://morphe.software/).
 
 ## Who this is for
 
 - Samsung phone with **Knox tripped** (0x1) from past root/unlock
 - Currently **unrooted** — KnoxPatch / LSPosed is not an option
-- Samsung Health blocks you with Knox / integrity errors
+- Samsung Health blocks you with Knox / integrity errors, or login fails after patching
 
 ## Patches
 
-| Patch | Description |
-|-------|-------------|
-| **Disable Knox integrity checks** | Bypasses Knox availability, warranty bit, root detection, and SAK checks |
+Both patches are **on by default** and should stay enabled for Samsung Health 6.32.0.001.
+
+| Patch | What it does |
+|-------|----------------|
+| **Disable Knox integrity checks** | Stubs Knox availability, warranty bit, root detection, and SAK checks (14 SDK methods) |
+| **Bypass Samsung Account provider checks** | Replaces `com.osp.app.signin` → `com.notsamsung.dummy` in dex and routes account lookups through Android `AccountManager` instead of Samsung Account's signature-checked provider |
 
 ## Supported apps
 
@@ -27,99 +28,51 @@ Download the universal APK from [APKMirror](https://www.apkmirror.com/apk/samsun
 ## Quick start
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases/latest).
-2. Add this patch source:
-
-   **https://github.com/bigyank/morphe-patches-samsung**
-
+2. Add this patch source: **https://github.com/bigyank/morphe-patches-samsung**  
    Or click: [Add to Morphe](https://morphe.software/add-source?github=bigyank/morphe-patches-samsung)
+3. Morphe Manager → **Settings** → **Advanced** → **Process runtime** → enable and set **1280 MB** (Samsung Health is ~300 MB; the default 256 MB can OOM during patching).
+4. Obtain Samsung Health APK (APKMirror or extract from your phone).
+5. Enable **both patches** (defaults) and patch.
+6. **Uninstall** stock Samsung Health first (signature mismatch), then install the patched APK.
 
-3. Obtain Samsung Health APK (APKMirror or extract from your phone).
-4. Enable **Disable Knox integrity checks** and patch.
-5. **Uninstall** stock Samsung Health first (signature mismatch), then install the patched APK.
+**Signing:** the default Morphe keystore works — no custom JKS import required. Login and sync were confirmed on Knox 0x1 devices with Morphe's built-in signing key.
 
-## Signing (required for Samsung Account)
+## How the account bypass works
 
-Morphe patch bundles (`.mpp`) **cannot embed a keystore** — they only change bytecode. Morphe Manager **signs the output APK** after patching, the same way ReVanced Manager does.
+Samsung Health normally calls Samsung Account's `AccountManagerProvider`, which checks the **APK signing certificate** against an allowlist. Patched Health gets blocked (`SignatureInfoDbHelper … mismatched` in logcat).
 
-### How Morphe handles signatures (YouTube, Reddit, etc.)
+The account patch fixes this in two layers (dex-only — no manifest/resource decode, so Morphe can patch on-device without OOM):
 
-| Step | What happens |
-|------|----------------|
-| **Input APK** | Optional SHA-256 fingerprint check in patch metadata (`signatures` field) — verifies you picked the right *stock* APK build, not your signing key |
-| **Patching** | Bytecode/resource changes only |
-| **Output APK** | Signed with **Morphe Manager’s keystore** (default: alias `Morphe`, password `Morphe`) |
+1. **String replacement** — every `com.osp.app.signin` const-string and static field default becomes `com.notsamsung.dummy`.
+2. **Provider stubs** — disable the provider path and redirect `getSamsungAccountId` to `AccountManager.getAccountsByType("com.osp.app.signin")`, which reads the account already on the device.
 
-For YouTube/Reddit that is enough: no server checks the patch signature against a whitelist.
+Manifest/res may still contain `com.osp.app.signin` in sync-adapter XML; that is fine — the runtime provider calls are what matter for login.
 
-### Why Samsung Health is different
+## Troubleshooting
 
-Samsung Health talks to **Samsung Account**, which maintains its own allowlist of which **app signing certificates** may call account APIs for `com.sec.android.app.shealth`.
+### Morphe stuck looping / out of memory
 
-| Signing key | Samsung Account login |
-|-------------|----------------------|
-| Default Morphe (`CN=Morphe`) | **Blocked** — logcat: `SignatureInfoDbHelper … mismatched` → `blocked application` |
-| SamsungPatch keystore **only** (no account patch) | **Still blocked** — cert is correct but Health still calls `com.osp.app.signin` |
-| SamsungPatch keystore **+** *Bypass Samsung Account signature check* patch | **Works** — matches Mac/PC SamsungAppsPatcher (keystore + `com.notsamsung.dummy` workaround) |
+1. **Force-stop** Morphe Manager.
+2. Set process runtime to **1280 MB** (see quick start).
+3. Close other apps before patching.
+4. Use the latest release — older versions that decoded resources could OOM-loop on device.
 
-The original fork ships this keystore **in the repo** (not a secret — it is a shared community key so everyone’s patched apps can update each other and interop with watch plugins):
+### Login still fails
 
-- [`keystore.jks`](https://github.com/adil192/SamsungAppsPatcher/blob/main/keystore.jks) — also copied to [`signing/keystore.jks`](signing/keystore.jks) in this repo
-- [`ks-pass.txt`](https://github.com/adil192/SamsungAppsPatcher/blob/main/ks-pass.txt) — also in [`signing/ks-pass.txt`](signing/ks-pass.txt)
-
-| Field | Value |
-|-------|--------|
-| **Keystore file** | `keystore.jks` |
-| **Alias** | `key0` |
-| **Store password** | `Uwa4V2FvQLVqgUhAN6c` |
-| **Key password** | `Uwa4V2FvQLVqgUhAN6c` (same as store) |
-| **Certificate** | `CN=SamsungPatch PatchCertificate` |
-| **SHA-256** | `0E:0E:2D:7E:6C:5D:BA:…:3D:00:E7` |
-
-### Import into Morphe Manager (one-time)
-
-1. Copy `signing/keystore.jks` to your phone (or download from this repo / SamsungAppsPatcher).
-2. Morphe Manager → **Settings** → **Advanced** → **Import signing keystore**.
-3. Select the JKS file; enter alias **`key0`** and password **`Uwa4V2FvQLVqgUhAN6c`** for both store and key.
-4. Enable **Bypass Samsung Account signature check** (on by default) — this is separate from signing.
-5. Uninstall Samsung Health → patch again → install.
-
-After import, all Morphe patches use SamsungPatch signing until you change the keystore.
-
-Dex-only (no resource decode, avoids OOM on device). Replaces account package strings and stubs Samsung Account provider calls so Health uses Android AccountManager instead of the signature-checked provider. Use with the SamsungPatch keystore. For full manifest/res parity, use the Mac `patch-shealth-632.sh` script.
-
-If patching still fails with out-of-memory, close other apps and retry, or patch on a PC with [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) and sideload the APK.
-
-### Morphe Manager stuck looping / OOM on Samsung Health
-
-Samsung Health (~300 MB) always hits **Decoding all resources** in Morphe — that step alone can exhaust the patcher heap on phone.
-
-1. **Force-stop** Morphe Manager (kills a stuck patcher loop).
-2. **Settings → System → Process runtime** → enable → set **1280 MB** (not 256 MB).
-3. Free RAM — close other apps before patching.
-4. Try with **only Knox patch** first (disable account patch). If that completes, re-enable account patch on v1.0.8+ (lighter dex scan).
-5. **PC fallback (recommended for Health):** on a Mac/PC run `./patch-shealth-632.sh` in [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher), then `adb install` the output. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
-
-### How the PC patcher also uses signatures (two layers)
-
-The original repo does **two** signature-related things:
-
-1. **APK signing** — `apksigner sign --ks keystore.jks` after rebuild (same keystore as above).
-2. **In-app signature allowlists** — `*_custom_cert.patch` files embed the SamsungPatch cert hex so Health / Wearable plugins trust each other at runtime (`Signaturechecker.smali`, etc.). Health 6.32 Knox bypass uses a Python script instead of those legacy patches; Morphe Knox patches replace that layer. **Samsung Account blocking is separate** — it checks the **APK signing cert**, not those internal allowlists.
+- Confirm **both** patches are enabled.
+- Check logcat for `AccountManagerProvider` / `SignatureInfoDbHelper` — if those lines appear, the account patch did not apply; update to the latest release.
+- Uninstall stock Health before installing the patched APK.
 
 ## Important notes
 
-- **Disable auto-update** for Samsung Health after installing, or the store will replace the patched app.
+- **Disable auto-update** for Samsung Health after installing.
 - **Cloud restore** from Samsung account may hang on Knox 0x1 — cancel restore and use fresh local data.
-- **Galaxy Wearable / Fit 3**: basic band sync often works with stock Wearable + patched Health; full wearable suite patching is still on the PC repo.
+- **Galaxy Wearable / Fit 3**: basic band sync often works with stock Wearable + patched Health.
 - Knox status remains tripped at the system level — this only fixes the Health app.
-
-## PC alternative
-
-Pre-built or script-patched APKs: [bigyank/SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher)
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). To add a new Samsung Health version, test fingerprints and update `Constants.kt`.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
@@ -138,7 +91,7 @@ GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Bypass Samsung Account signature check](#bypass-samsung-account-signature-check) | Replaces com.osp.app.signin with com.notsamsung.dummy in dex and bypasses Samsung Account provider signature checks. Use with the SamsungPatch keystore. |  |
+| [Bypass Samsung Account provider checks](#bypass-samsung-account-provider-checks) | Replaces com.osp.app.signin with com.notsamsung.dummy in dex and routes account lookups through Android AccountManager instead of Samsung Account's provider. |  |
 | [Disable Knox integrity checks](#disable-knox-integrity-checks) | Bypass Knox, root, warranty bit, and SAK checks so Samsung Health runs on Knox-tripped devices (0x1) without root. |  |
 
 </details>

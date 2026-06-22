@@ -3,8 +3,8 @@
   "version": "1.0.11",
   "patches": [
     {
-      "name": "Bypass Samsung Account signature check",
-      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex and bypasses Samsung Account provider signature checks. Use with the SamsungPatch keystore.",
+      "name": "Bypass Samsung Account provider checks",
+      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex and routes account lookups through Android AccountManager instead of Samsung Account's provider.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
