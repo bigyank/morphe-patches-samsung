@@ -1,3 +1,9 @@
+## [1.0.8](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.7...v1.0.8) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* scan dex read-only before mutating classes for account bypass ([c1536f8](https://github.com/bigyank/morphe-patches-samsung/commit/c1536f8cefae185ef9628bc7e41012eb77e46807))
+
 ## [1.0.7](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.6...v1.0.7) (2026-06-22)
 
 ### 🐛 Bug Fixes

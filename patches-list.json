@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs.",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "patches": [
     {
       "name": "Bypass Samsung Account signature check",
-      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex (same as PC patcher). Dex-only to avoid OOM on large APKs. Use with the SamsungPatch keystore.",
+      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex (same as PC patcher). Use with the SamsungPatch keystore. If on-device patching loops or OOMs, patch on a PC instead.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
