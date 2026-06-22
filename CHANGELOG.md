@@ -1,3 +1,11 @@
+## [1.0.6](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.5...v1.0.6) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* add Samsung Account signature bypass for patched Health login ([4e34bc4](https://github.com/bigyank/morphe-patches-samsung/commit/4e34bc4857c2bffb27b000edc6dbaa87404cd258))
+* iterate mutableClass.methods directly in account bypass patch ([03a4b47](https://github.com/bigyank/morphe-patches-samsung/commit/03a4b47e14723c15da4e412d033fa37acebd7d5c))
+* resolve Samsung Account patch compile error in CI ([83b19f4](https://github.com/bigyank/morphe-patches-samsung/commit/83b19f44693debd90de113286d345b601a390589))
+
 ## [1.0.5](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.4...v1.0.5) (2026-06-22)
 
 ### 🐛 Bug Fixes
