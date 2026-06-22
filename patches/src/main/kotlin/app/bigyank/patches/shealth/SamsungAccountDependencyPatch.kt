@@ -3,37 +3,31 @@ package app.bigyank.patches.shealth
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
+import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableStringEncodedValue
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.value.StringEncodedValue
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
+import com.android.tools.smali.dexlib2.util.MethodUtil
 
 private const val SAMSUNG_ACCOUNT_PACKAGE = "com.osp.app.signin"
 private const val DUMMY_ACCOUNT_PACKAGE = "com.notsamsung.dummy"
 
-private fun Instruction.isSamsungAccountPackageString(): Boolean {
-    if (opcode != Opcode.CONST_STRING) return false
-    val reference = (this as ReferenceInstruction).reference
-    return reference is StringReference && reference.string == SAMSUNG_ACCOUNT_PACKAGE
-}
+private fun String.replaceSigninPackage(): String =
+    replace(SAMSUNG_ACCOUNT_PACKAGE, DUMMY_ACCOUNT_PACKAGE)
 
-private fun Method.collectSigninStringReplacements(): List<Pair<Int, Int>> {
-    val implementation = implementation ?: return emptyList()
-    return buildList {
-        implementation.instructions.forEachIndexed { index, instruction ->
-            if (!instruction.isSamsungAccountPackageString()) return@forEachIndexed
-            add(index to (instruction as OneRegisterInstruction).registerA)
-        }
-    }
-}
+private fun isStringConstantOpcode(opcode: Opcode): Boolean =
+    opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
 
 /**
  * Same smali workaround as [SamsungAppsPatcher wearable-patcher.sh](https://github.com/adil192/SamsungAppsPatcher).
  *
- * Scans dex read-only first and only opens mutable classes that contain the target string, so Morphe
- * Manager does not duplicate every class in memory on this ~300 MB APK.
+ * Mac/PC sed replaces every occurrence of com.osp.app.signin (including field defaults and
+ * com.osp.app.signin.service.* strings), not just exact package-name const-strings. Dex-only
+ * so Morphe Manager does not decode the ~300 MB resource table and OOM on device.
  */
 @Suppress("unused")
 val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
@@ -46,23 +40,60 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
 
     execute {
         classDefForEach { classDef ->
-            val replacementsByMethod = classDef.methods.mapNotNull { method ->
-                val replacements = method.collectSigninStringReplacements()
+            val methodReplacements = classDef.methods.mapNotNull { method ->
+                val implementation = method.implementation ?: return@mapNotNull null
+                val replacements = buildList {
+                    implementation.instructions.forEachIndexed { index, instruction ->
+                        if (!isStringConstantOpcode(instruction.opcode)) return@forEachIndexed
+                        val string = ((instruction as ReferenceInstruction).reference as? StringReference)?.string
+                            ?: return@forEachIndexed
+                        if (SAMSUNG_ACCOUNT_PACKAGE !in string) return@forEachIndexed
+                        add(
+                            Triple(
+                                index,
+                                (instruction as OneRegisterInstruction).registerA,
+                                instruction.opcode,
+                            ),
+                        )
+                    }
+                }
                 if (replacements.isEmpty()) null else method to replacements
             }
-            if (replacementsByMethod.isEmpty()) return@classDefForEach
+
+            val fieldReplacements = classDef.fields.mapNotNull { field ->
+                val initial = field.initialValue as? StringEncodedValue ?: return@mapNotNull null
+                if (SAMSUNG_ACCOUNT_PACKAGE !in initial.value) return@mapNotNull null
+                field to initial.value.replaceSigninPackage()
+            }
+
+            if (methodReplacements.isEmpty() && fieldReplacements.isEmpty()) return@classDefForEach
 
             val mutableClass = mutableClassDefBy(classDef)
-            replacementsByMethod.forEach { (method, replacements) ->
-                val methodIndex = classDef.methods.indexOf(method)
-                if (methodIndex < 0) return@forEach
-                val mutableMethod = mutableClass.methods.elementAt(methodIndex)
-                replacements.sortedByDescending { it.first }.forEach { (index, register) ->
+
+            methodReplacements.forEach { (method, replacements) ->
+                val mutableMethod = mutableClass.methods.first { candidate ->
+                    MethodUtil.methodSignaturesMatch(candidate, method)
+                }
+                replacements.sortedByDescending { it.first }.forEach { (index, register, opcode) ->
+                    val originalString = (
+                        method.implementation!!.instructions[index] as ReferenceInstruction
+                        ).reference as StringReference
                     mutableMethod.replaceInstruction(
                         index,
-                        "const-string v$register, \"$DUMMY_ACCOUNT_PACKAGE\"",
+                        BuilderInstruction21c(
+                            opcode,
+                            register,
+                            ImmutableStringReference(originalString.string.replaceSigninPackage()),
+                        ),
                     )
                 }
+            }
+
+            fieldReplacements.forEach { (field, newValue) ->
+                val mutableField = mutableClass.fields.first { candidate ->
+                    candidate.name == field.name && candidate.type == field.type
+                }
+                (mutableField.getInitialValue() as? MutableStringEncodedValue)?.setValue(newValue)
             }
         }
     }
