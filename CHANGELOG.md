@@ -1,3 +1,13 @@
+## [1.0.16](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.15...v1.0.16) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* **shealth:** escape isRooted marker string to fix Kotlin compile ([801dfc6](https://github.com/bigyank/morphe-patches-samsung/commit/801dfc60394e0406bee544800c42550583a26fe9))
+
+### 🚀 Updated App Support
+
+* **shealth:** add isRooted dex scan and SamsungAppsPatcher audit docs ([ef1f4ab](https://github.com/bigyank/morphe-patches-samsung/commit/ef1f4abded486da37829b841b30b87c49c0891fb))
+
 ## [1.0.15](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.14...v1.0.15) (2026-06-22)
 
 ### 🐛 Bug Fixes

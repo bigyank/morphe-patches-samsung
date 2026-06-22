@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-06-22T18:10:06",
-  "description": "## [1.0.15](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.14...v1.0.15) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* **shealth:** scan dex for OOBE Knox gates instead of obfuscated fingerprints ([7e0faff](https://github.com/bigyank/morphe-patches-samsung/commit/7e0faff49189d748b9237814566fb062b8f4e3fa))",
-  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.15/patches-1.0.15.mpp",
+  "created_at": "2026-06-22T20:35:08",
+  "description": "## [1.0.16](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.15...v1.0.16) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* **shealth:** escape isRooted marker string to fix Kotlin compile ([801dfc6](https://github.com/bigyank/morphe-patches-samsung/commit/801dfc60394e0406bee544800c42550583a26fe9))\n\n### 🚀 Updated App Support\n\n* **shealth:** add isRooted dex scan and SamsungAppsPatcher audit docs ([ef1f4ab](https://github.com/bigyank/morphe-patches-samsung/commit/ef1f4abded486da37829b841b30b87c49c0891fb))",
+  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.16/patches-1.0.16.mpp",
   "signature_download_url": "",
-  "version": "1.0.15"
+  "version": "1.0.16"
 }
