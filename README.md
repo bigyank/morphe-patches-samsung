@@ -2,7 +2,7 @@
 
 # Samsung Health Morphe Patches
 
-**Dex-only Morphe patches for Samsung Health on Knox-tripped (0x1) Samsung phones — no PC, no root, no custom keystore.**
+**Dex-only Morphe patches for Samsung Health on Knox-tripped Samsung phones (warranty bit 0x1). Patch on-device with Morphe Manager: no PC, no root, no custom keystore.**
 
 [![Release](https://img.shields.io/github/v/release/bigyank/morphe-patches-samsung?style=for-the-badge&logo=github)](https://github.com/bigyank/morphe-patches-samsung/releases/latest)
 [![Morphe](https://img.shields.io/badge/Morphe-Patches-8B5CF6?style=for-the-badge)](https://morphe.software)
@@ -15,28 +15,28 @@
 
 <div align="center">
 
-### 👉 [Add Samsung Health Patches to Morphe Manager](https://morphe.software/add-source?github=bigyank/morphe-patches-samsung) 👈
+### [Add Samsung Health Patches to Morphe Manager](https://morphe.software/add-source?github=bigyank/morphe-patches-samsung)
 
 </div>
 
-Open that link on the phone where Morphe is installed — it adds this patch source automatically.
+Open on the phone that runs Morphe Manager. The link adds this patch source automatically.
 
-**Or add manually:** Morphe Manager → patch sources **+** → **Remote** → paste:
+**Manual add:** Morphe Manager → patch sources **+** → **Remote** → paste:
 
 ```
 https://github.com/bigyank/morphe-patches-samsung
 ```
 
 > [!NOTE]
-> All patches are **dex-only** (bytecode). No apktool, no PC, no Termux scripts. Morphe rewrites DEX on-device. Samsung Health is ~300 MB — set **Process runtime** to **1280 MB** before patching (see [Quick start](#quick-start)).
+> Patches are **dex-only** (bytecode). No apktool, PC, or Termux scripts. Morphe rewrites DEX on-device. Samsung Health is ~300 MB; set **Process runtime** to **1280 MB** before patching ([Quick start](#quick-start)).
 
 ---
 
 ## Who this is for
 
-- Samsung phone with **Knox tripped** (0x1) from past root/unlock
-- Currently **unrooted** — [KnoxPatch](https://github.com/salvogiangri/KnoxPatch) / LSPosed is not an option
-- Samsung Health blocks you with Knox / integrity errors, or login fails after patching
+- Samsung phone with **Knox tripped** (0x1) from a past root or unlock
+- **Unrooted** today: [KnoxPatch](https://github.com/salvogiangri/KnoxPatch) / LSPosed is not an option
+- Stock Samsung Health shows Knox or integrity errors, or login fails after patching
 
 ---
 
@@ -62,7 +62,7 @@ https://github.com/bigyank/morphe-patches-samsung
 
 <!-- PATCHES_END -->
 
-Both patches are **on by default**. Use a [supported Health version](#patches) (latest: **6.32.0.001**).
+Both patches default **on**. Target a [supported Health version](#patches); latest is **6.32.0.001**.
 
 ---
 
@@ -70,53 +70,53 @@ Both patches are **on by default**. Use a [supported Health version](#patches) (
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases/latest).
 2. [Add this patch source](#add-to-morphe).
-3. Morphe Manager → **Settings** → **Advanced** → **Process runtime** → enable and set **1280 MB**.
-4. Obtain Samsung Health APK ([APKMirror](https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/) or extract from your phone).
-5. Enable **both patches** (defaults) and patch.
-6. **Uninstall** stock Samsung Health first (signature mismatch), then install the patched APK.
+3. Morphe Manager → **Settings** → **Advanced** → **Process runtime** → enable, set **1280 MB**.
+4. Get a Samsung Health APK ([APKMirror](https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/) or extract from your phone).
+5. Enable **both patches** and run patch.
+6. Uninstall stock Samsung Health (signature mismatch), then install the patched APK.
 
-**Signing:** Morphe's default keystore works — no custom JKS import. Login and sync confirmed on Knox 0x1 devices.
+Morphe's default keystore is enough; no custom JKS. Login and sync work on Knox 0x1 with that key.
 
-**Version check** (Galaxy Store builds may differ from APKMirror):
+Galaxy Store builds may differ from APKMirror:
 
 ```bash
 adb shell dumpsys package com.sec.android.app.shealth | grep versionName
 ```
 
-If yours is not listed in the patch table, open an issue with the version string.
+If your version is missing from the patch table, open an issue with the version string.
 
 ---
 
 ## How the patches work
 
 <details>
-<summary><b>Disable Knox integrity checks</b> — SDK stubs + content-scanned OOBE gates</summary>
+<summary><b>Disable Knox integrity checks</b>: SDK stubs + content-scanned OOBE gates</summary>
 
 <br>
 
 | Layer | What it does |
 | :--- | :--- |
 | **SDK fingerprints** | Stubs 17 stable Knox/SAK methods (`KnoxAdapter`, `IcccAdapter`, `KnoxControl`, `SakChecker`, etc.) to return safe values |
-| **OOBE dex scan** | Finds Knox popup launchers, `HomeAppCloseActivity` warranty-bit checks, and `KnoxHandlerViewModel` flags by string/type patterns — obfuscated class names change every release |
+| **OOBE dex scan** | Finds Knox popup launchers, `HomeAppCloseActivity` warranty-bit checks, and `KnoxHandlerViewModel` flags by string/type patterns (obfuscated class names change every release) |
 | **Root file scan** | Stubs static `(File)Z` methods containing the Kotlin synthetic string `$this$isRooted` |
 
-Same approach as the PC-side [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) Python scanner, ported to Morphe bytecode patches. Details: [AUDIT.md](./AUDIT.md).
+Same logic as [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) `apply_shealth_knox_bypass.py`, ported to Morphe bytecode. See [AUDIT.md](./AUDIT.md).
 
 </details>
 
 <details>
-<summary><b>Bypass Samsung Account provider checks</b> — login without custom signing cert</summary>
+<summary><b>Bypass Samsung Account provider checks</b>: login without a custom signing cert</summary>
 
 <br>
 
-Samsung Health calls Samsung Account's `AccountManagerProvider`, which checks the **APK signing certificate** against an allowlist. Patched Health gets blocked (`SignatureInfoDbHelper … mismatched` in logcat).
+Samsung Health calls Samsung Account's `AccountManagerProvider`, which checks the APK signing certificate against an allowlist. Patched builds hit `SignatureInfoDbHelper … mismatched` in logcat.
 
 | Layer | What it does |
 | :--- | :--- |
 | **String replacement** | Every `com.osp.app.signin` const-string and static field default → `com.notsamsung.dummy` |
 | **Provider stubs** | Disable the provider path; redirect `getSamsungAccountId` to `AccountManager.getAccountsByType("com.osp.app.signin")` |
 
-Manifest/res may still reference `com.osp.app.signin` in sync-adapter XML — runtime provider calls are what matter for login.
+Sync-adapter XML may still reference `com.osp.app.signin`; runtime provider calls are what block login.
 
 </details>
 
@@ -126,41 +126,41 @@ Manifest/res may still reference `com.osp.app.signin` in sync-adapter XML — ru
 
 ### Morphe stuck looping / out of memory
 
-1. **Force-stop** Morphe Manager.
-2. Set process runtime to **1280 MB** (see [Quick start](#quick-start)).
+1. Force-stop Morphe Manager.
+2. Set process runtime to **1280 MB** ([Quick start](#quick-start)).
 3. Close other apps before patching.
-4. Use the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest) — older versions that decoded resources could OOM-loop on device.
+4. Use the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest). Builds before v1.0.11 decoded resources and could OOM-loop on device.
 
 ### Login still fails
 
-- Confirm **both** patches are enabled.
-- Check logcat for `AccountManagerProvider` / `SignatureInfoDbHelper` — if those lines appear, the account patch did not apply; update to the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest).
+- Both patches must be enabled.
+- Logcat: search `AccountManagerProvider` / `SignatureInfoDbHelper`. Those lines mean the account patch did not apply; update to the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest).
 - Uninstall stock Health before installing the patched APK.
 
 ---
 
 ## Important notes
 
-- **Disable auto-update** for Samsung Health after installing.
-- **Cloud restore** from Samsung account may hang on Knox 0x1 — cancel restore and use fresh local data.
-- **Galaxy Wearable / Fit 3**: basic band sync often works with stock Wearable + patched Health.
-- Knox status remains tripped at the system level — this only fixes the Health app.
+- Turn off auto-update for Samsung Health after install.
+- Cloud restore from Samsung account may hang on Knox 0x1; cancel and use local data.
+- Galaxy Wearable / Fit 3: band sync often works with stock Wearable plus patched Health.
+- Knox stays tripped at the system level; this repo only fixes the Health app.
 
 > [!WARNING]
-> Do not re-enable manifest/resource patching for account bypass — it causes OOM on ~300 MB Health APKs during on-device patching.
+> Do not re-enable manifest/resource patching for the account bypass. It OOMs on ~300 MB Health APKs during on-device patching.
 
 ---
 
 ## Related projects
 
-| Project | Relationship |
+| Project | Notes |
 | :--- | :--- |
-| [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) | PC apktool predecessor — Galaxy Wearable + watch plugin patches still live here |
+| [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) | PC apktool predecessor; Galaxy Wearable and watch plugin patches |
 | [Morphe documentation](https://github.com/MorpheApp/morphe-documentation) | Patching guide, FAQ, troubleshooting |
 | [Awesome for Morphe](https://nvbangg.github.io/awesome-for-morphe) | Curated Morphe patch index |
-| [jadx-morphe](https://github.com/hoo-dles/jadx-morphe) | JADX plugin — useful for finding fingerprints on new Health builds |
+| [jadx-morphe](https://github.com/hoo-dles/jadx-morphe) | JADX plugin for fingerprint work on new Health builds |
 
-Full gap analysis vs SamsungAppsPatcher: **[AUDIT.md](./AUDIT.md)**.
+Gap analysis vs SamsungAppsPatcher: [AUDIT.md](./AUDIT.md).
 
 ---
 
@@ -172,7 +172,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Building
 
-Requires Java 21 and a GitHub token with `read:packages` for Morphe Maven packages.
+Java 21 and a GitHub token with `read:packages` for Morphe Maven packages.
 
 ```bash
 export GITHUB_TOKEN="$(gh auth token)"
@@ -185,4 +185,4 @@ Output: `patches/build/libs/patches-*.mpp`
 
 ## License
 
-GPLv3 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Not affiliated with Samsung or Morphe.
+GPLv3. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Not affiliated with Samsung or Morphe.

@@ -7,13 +7,13 @@ Handoff doc for agents continuing work on **Samsung Health Morphe patches**. Rea
 | Item | Value |
 |------|--------|
 | **Repo** | https://github.com/bigyank/morphe-patches-samsung |
-| **Latest release** | **v1.0.15** — use this or newer |
+| **Latest release** | **v1.0.16** — use this or newer |
 | **Morphe plugin** | `app.morphe.patches` 1.3.0 |
 | **Target app** | Samsung Health `com.sec.android.app.shealth` — **latest: 6.32.0.001** (also 6.31.3.013) |
 | **User scenario** | Knox tripped (0x1), **unrooted** Samsung phone; stock Health blocks Knox/integrity; patched Health must launch, login, and sync |
 | **Patch source URL** | `https://github.com/bigyank/morphe-patches-samsung` |
 
-**Working setup (device-verified on v1.0.15):** Morphe Manager, **both patches enabled**, process runtime **1280 MB**, default Morphe keystore (no custom JKS). Test device: SM-S911B, Android 16, Knox 0x1 — launch, account sync, Galaxy Fit3 wearable sync confirmed.
+**Working setup (device-verified on v1.0.16):** Morphe Manager, **both patches enabled**, process runtime **1280 MB**, default Morphe keystore (no custom JKS). Test device: SM-S911B, Android 16, Knox 0x1: launch, account sync, Galaxy Fit3 wearable sync confirmed.
 
 ---
 
@@ -38,6 +38,7 @@ Patch Samsung Health **on-device** via [Morphe Manager](https://morphe.software/
 | Morphe OOM / patch loop on device | `resourcePatch` decodes ~300 MB Health resources | **Dex-only** account patch; never re-add manifest/res decode (v1.0.10 was broken) |
 | CI compile failures after refactor | Morphe 1.3 needs `BytecodePatchContext` for `fingerprint.method` and smali `addInstructions` | Extension functions on `BytecodePatchContext`, logic inside `fingerprint.method.apply { }` (v1.0.12) |
 | OOBE fingerprint mismatch on 6.32 | Hardcoded `util/h.p` obfuscated per build | Content-scanned `OobeKnoxStubber.kt` (v1.0.15) |
+| CI compile fail on `$this$isRooted` string | Kotlin string interpolation in `isRootedFileCheck` | Escape dollars: `${'$'}this${'$'}isRooted` (v1.0.16) |
 
 ### Refactor completed (main branch)
 
@@ -108,7 +109,7 @@ Morphe identifies patches by Kotlin `val` names:
 
 ### Patch 1 — Knox (`KnoxBypassPatch.kt`)
 
-Stubs **stable SDK methods** plus **OOBE Knox/root gates** (not dynamic root-file scans):
+Stubs **stable SDK methods** plus **content-scanned OOBE/root gates** (`OobeKnoxStubber.kt`):
 
 - `KnoxAdapter` (9 methods incl. `checkKnoxInitMigCondition`, `isLicenseActivated`)
 - `IcccAdapter.checkKnoxCompromised`
@@ -190,7 +191,7 @@ CI runs the same Gradle command on push to `main`, then semantic-release publish
 
 ### Login fails after patch
 
-- Confirm both patches enabled and **latest release ([v1.0.15](https://github.com/bigyank/morphe-patches-samsung/releases/latest))**.
+- Confirm both patches enabled and **[latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest)** (v1.0.16+).
 - Capture logcat during login; search for `SignatureInfoDbHelper` / `AccountManagerProvider`.
 - If provider lines appear → account patch did not apply (wrong version, patch disabled, or fingerprint mismatch on new Health build).
 
@@ -216,7 +217,7 @@ CI runs the same Gradle command on push to `main`, then semantic-release publish
 5. PR with device model + Knox status + results.
 6. Use conventional commit; release is automatic.
 
-If new Health version adds obfuscated Knox gates, prefer **new fingerprints** over broad dex scans.
+If new Health version adds obfuscated Knox gates, extend **`OobeKnoxStubber.kt` heuristics** or add fingerprints for stable SDK methods. Do not hardcode obfuscated class names.
 
 ---
 

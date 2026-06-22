@@ -26,7 +26,7 @@ patches/src/main/kotlin/app/bigyank/patches/shealth/
 
 ## Patch design notes
 
-The Knox patch stubs **17 stable SDK methods** (fingerprints) plus **OOBE gates** via dex content scan in `OobeKnoxStubber.kt` (obfuscated class names like `home/oobe2/util/h` change per release — do not hardcode them).
+The Knox patch stubs **17 stable SDK methods** (fingerprints) plus **OOBE/root gates** via dex content scan in `OobeKnoxStubber.kt`. Obfuscated class names like `home/oobe2/util/h` change per release; do not hardcode them.
 
 **Out of scope for Health patches:** manifest/res multiuser edits, custom cert allowlists, other Samsung apps. `$this$isRooted` file checks are handled via dex scan in `OobeKnoxStubber.kt`. See [AUDIT.md](./AUDIT.md) for comparison with SamsungAppsPatcher and a prioritized roadmap.
 
