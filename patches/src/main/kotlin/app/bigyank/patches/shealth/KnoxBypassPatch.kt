@@ -1,8 +1,30 @@
 package app.bigyank.patches.shealth
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
-import app.morphe.util.returnEarly
+import com.android.tools.smali.dexlib2.iface.Method
+
+private fun Method.stubWith(smaliBody: String) {
+    implementation?.let { impl ->
+        removeInstructions(0, impl.instructions.count())
+        addInstructions(0, smaliBody)
+    }
+}
+
+private fun Method.stubReturnBoolean(value: Boolean) {
+    stubWith(if (value) "const/4 v0, 0x1\nreturn v0" else "const/4 v0, 0x0\nreturn v0")
+}
+
+private fun Method.stubReturnInt(value: Int) {
+    stubWith("const/4 v0, 0x0\nreturn v0")
+}
+
+private fun Method.stubReturnNullReference() {
+    stubWith("const/4 v0, 0x0\nreturn-object v0")
+}
 
 /**
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
@@ -18,27 +40,26 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_SHEALTH)
 
-    finalize {
-        // KnoxAdapter
-        KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.returnEarly(null)
-        KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.returnEarly(0)
-        KnoxAdapterIsKnoxAvailableFingerprint.method.returnEarly(false)
-        KnoxAdapterIsKnoxAvailableCoreFingerprint.method.returnEarly(false)
-        KnoxAdapterIsAksSakMandatoryFingerprint.method.returnEarly(false)
-        KnoxAdapterShouldUseKnoxFingerprint.method.returnEarly(false)
-        KnoxAdapterIsSupportedTimaVersionFingerprint.method.returnEarly(false)
+    execute {
+        KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.stubReturnNullReference()
+        KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.stubReturnInt(0)
+        KnoxAdapterIsKnoxAvailableFingerprint.method.stubReturnBoolean(false)
+        KnoxAdapterIsKnoxAvailableCoreFingerprint.method.stubReturnBoolean(false)
+        KnoxAdapterIsAksSakMandatoryFingerprint.method.stubReturnBoolean(false)
+        KnoxAdapterShouldUseKnoxFingerprint.method.stubReturnBoolean(false)
+        KnoxAdapterIsSupportedTimaVersionFingerprint.method.stubReturnBoolean(false)
 
-        // IcccAdapter
-        IcccAdapterCheckKnoxCompromisedFingerprint.method.returnEarly(0)
+        IcccAdapterCheckKnoxCompromisedFingerprint.method.stubReturnInt(0)
 
-        // KnoxControl + binder proxy
-        KnoxControlIsKnoxAvailableFingerprint.method.returnEarly(false)
-        KnoxControlCheckKnoxCompromisedFingerprint.method.returnEarly(null)
-        KnoxControlCheckWarrantyBitFingerprint.method.returnEarly(0)
-        IKnoxControlProxyIsKnoxAvailableFingerprint.method.returnEarly(false)
+        KnoxControlIsKnoxAvailableFingerprint.method.stubReturnBoolean(false)
+        KnoxControlCheckKnoxCompromisedFingerprint.method.stubReturnNullReference()
+        KnoxControlCheckWarrantyBitFingerprint.method.stubReturnInt(0)
+        IKnoxControlProxyIsKnoxAvailableFingerprint.method.stubReturnBoolean(false)
 
-        // Samsung Attestation Key (SAK)
-        SakCheckerIsSupportedFingerprint.method.returnEarly(false)
-        SamsungSakCheckerImplFingerprint.method.returnEarly(false)
+        SakCheckerIsSupportedFingerprint.method.stubReturnBoolean(false)
+
+        val sakImplClass = classDefBy(SamsungSakCheckerImplFingerprint.definingClass!!)
+        val sakImpl = SamsungSakCheckerImplFingerprint.match(sakImplClass)
+        sakImpl.method.stubReturnBoolean(false)
     }
 }

@@ -1,30 +1,16 @@
-# 👋 Contribution guidelines
+# Bigyank Samsung Morphe Patches
 
-This document describes how to contribute to Morphe Patches template.
+Thank you for contributing.
 
-## 📖 Resources to help you get started
+## Adding a new Samsung Health version
 
-* [Issues](https://github.com/Morpheapp/morphe-patches-template/issues) are where we keep track of bugs and feature requests
+1. Download the target APK from APKMirror.
+2. Decompile with `apktool d shealth.apk`.
+3. Verify Knox-related classes still exist at the paths in `Fingerprints.kt`.
+4. Add `AppTarget(version = "x.y.z")` to `Constants.kt`.
+5. Test patch with Morphe CLI or Manager.
+6. Open a PR with device model, Knox status, and test results.
 
-## 🙏 Submitting a feature request
+## Commit messages
 
-Features can be requested by opening an issue using the
-[Feature request issue template](https://github.com/MorpheApp/morphe-patches-template/issues/new?labels=Feature+request&template=feature_request.yml&title=feat%3A+).
-
-## 🐞 Submitting a bug report
-
-If you encounter a bug while using Morphe Patches template, open an issue using the
-[Bug report issue template](https://github.com/MorpheApp/morphe-patches-template/issues/new?labels=Bug+report&template=bug_report.yml&title=bug%3A+).
-
-## 📝 How to contribute
-
-1. Before contributing, it is recommended to open an issue to discuss your change
-with the maintainers of Morphe Patches template
-2. Development happens on the `dev` branch. Fork the repository and create your branch from `dev`
-3. Commit your changes
-4. Submit a pull request to the `dev` branch of the repository and reference issues
-that your pull request closes in the description of your pull request
-5. Our team will review your pull request and provide feedback. Once your pull request is approved,
-it will be merged into the `dev` branch and will be included in the next release of Morphe Patches template
-
-❤️ Thank you for considering contributing to Morphe Patches template
+Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `bump:`) — releases are automated.
