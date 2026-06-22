@@ -37,6 +37,63 @@ Download the universal APK from [APKMirror](https://www.apkmirror.com/apk/samsun
 4. Enable **Disable Knox integrity checks** and patch.
 5. **Uninstall** stock Samsung Health first (signature mismatch), then install the patched APK.
 
+## Signing (required for Samsung Account)
+
+Morphe patch bundles (`.mpp`) **cannot embed a keystore** — they only change bytecode. Morphe Manager **signs the output APK** after patching, the same way ReVanced Manager does.
+
+### How Morphe handles signatures (YouTube, Reddit, etc.)
+
+| Step | What happens |
+|------|----------------|
+| **Input APK** | Optional SHA-256 fingerprint check in patch metadata (`signatures` field) — verifies you picked the right *stock* APK build, not your signing key |
+| **Patching** | Bytecode/resource changes only |
+| **Output APK** | Signed with **Morphe Manager’s keystore** (default: alias `Morphe`, password `Morphe`) |
+
+For YouTube/Reddit that is enough: no server checks the patch signature against a whitelist.
+
+### Why Samsung Health is different
+
+Samsung Health talks to **Samsung Account**, which maintains its own allowlist of which **app signing certificates** may call account APIs for `com.sec.android.app.shealth`.
+
+| Signing key | Samsung Account login |
+|-------------|----------------------|
+| Default Morphe (`CN=Morphe`) | **Blocked** — logcat: `SignatureInfoDbHelper … mismatched` → `blocked application` |
+| SamsungPatch keystore **only** (no account patch) | **Still blocked** — cert is correct but Health still calls `com.osp.app.signin` |
+| SamsungPatch keystore **+** *Bypass Samsung Account signature check* patch | **Works** — matches Mac/PC SamsungAppsPatcher (keystore + `com.notsamsung.dummy` workaround) |
+
+The original fork ships this keystore **in the repo** (not a secret — it is a shared community key so everyone’s patched apps can update each other and interop with watch plugins):
+
+- [`keystore.jks`](https://github.com/adil192/SamsungAppsPatcher/blob/main/keystore.jks) — also copied to [`signing/keystore.jks`](signing/keystore.jks) in this repo
+- [`ks-pass.txt`](https://github.com/adil192/SamsungAppsPatcher/blob/main/ks-pass.txt) — also in [`signing/ks-pass.txt`](signing/ks-pass.txt)
+
+| Field | Value |
+|-------|--------|
+| **Keystore file** | `keystore.jks` |
+| **Alias** | `key0` |
+| **Store password** | `Uwa4V2FvQLVqgUhAN6c` |
+| **Key password** | `Uwa4V2FvQLVqgUhAN6c` (same as store) |
+| **Certificate** | `CN=SamsungPatch PatchCertificate` |
+| **SHA-256** | `0E:0E:2D:7E:6C:5D:BA:…:3D:00:E7` |
+
+### Import into Morphe Manager (one-time)
+
+1. Copy `signing/keystore.jks` to your phone (or download from this repo / SamsungAppsPatcher).
+2. Morphe Manager → **Settings** → **Advanced** → **Import signing keystore**.
+3. Select the JKS file; enter alias **`key0`** and password **`Uwa4V2FvQLVqgUhAN6c`** for both store and key.
+4. Enable **Bypass Samsung Account signature check** (on by default) — this is separate from signing.
+5. Uninstall Samsung Health → patch again → install.
+
+After import, all Morphe patches use SamsungPatch signing until you change the keystore.
+
+The Mac/PC patcher applies the same account workaround automatically (`com.osp.app.signin` → `com.notsamsung.dummy` in smali/manifest). Morphe needs the dedicated patch for that; importing the keystore alone is not enough. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
+
+### How the PC patcher also uses signatures (two layers)
+
+The original repo does **two** signature-related things:
+
+1. **APK signing** — `apksigner sign --ks keystore.jks` after rebuild (same keystore as above).
+2. **In-app signature allowlists** — `*_custom_cert.patch` files embed the SamsungPatch cert hex so Health / Wearable plugins trust each other at runtime (`Signaturechecker.smali`, etc.). Health 6.32 Knox bypass uses a Python script instead of those legacy patches; Morphe Knox patches replace that layer. **Samsung Account blocking is separate** — it checks the **APK signing cert**, not those internal allowlists.
+
 ## Important notes
 
 - **Disable auto-update** for Samsung Health after installing, or the store will replace the patched app.
