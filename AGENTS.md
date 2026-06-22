@@ -77,6 +77,7 @@ morphe-patches-samsung/
 │       ├── AccountBypassPatch.kt    # val bypassSamsungAccountSignatureCheckPatch
 │       ├── Fingerprints.kt          # All method fingerprints (Knox + account)
 │       ├── BytecodeStubUtils.kt     # stubReturnFalse, stubZeroReturn, replaceMethodBody
+│       ├── OobeKnoxStubber.kt       # content-scanned OOBE Knox/root gate stubs
 │       └── SigninPackageReplacer.kt # replaceSigninPackageInDex()
 ├── patches/build.gradle.kts         # Morphe bundle metadata; -Xcontext-receivers
 ├── patches-list.json                # Auto-updated by release CI — do not hand-edit
@@ -106,7 +107,7 @@ Stubs **stable SDK methods** plus **OOBE Knox/root gates** (not dynamic root-fil
 - `KnoxControl` (3 methods)
 - `IKnoxControl$Stub$Proxy` (`isKnoxAvailable`, `requestKeyInitForKnox`)
 - `SakChecker.isSupported`, `c6r.isSakSupported`
-- OOBE: `home/oobe2/util/h` (Knox popups), `HomeAppCloseActivity.s3`, `KnoxHandlerViewModel.r/z`
+- OOBE: content-scanned Knox popups, `HomeAppCloseActivity` root check, `KnoxHandlerViewModel` flag getter/setter (see `OobeKnoxStubber.kt`)
 
 **Out of scope:** obfuscated `$this$isRooted` file scans and manifest/res multiuser patches.
 

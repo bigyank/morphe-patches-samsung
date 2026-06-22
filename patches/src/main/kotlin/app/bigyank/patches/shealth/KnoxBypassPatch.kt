@@ -36,10 +36,6 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
         stubZeroReturn(SakCheckerIsSupportedFingerprint, returnObject = false)
         stubZeroReturn(SamsungSakCheckerC6rFingerprint, returnObject = false)
 
-        stubReturnVoid(OobeUtilHShowKnoxExceptionPopupFingerprint)
-        stubReturnVoid(OobeUtilHShowKnoxIntegrityErrorPopupFingerprint)
-        stubZeroReturn(HomeAppCloseActivityIsDeviceRootedFingerprint, returnObject = false)
-        stubZeroReturn(KnoxHandlerViewModelGetIsKnoxAvailableFingerprint, returnObject = false)
-        stubReturnVoid(KnoxHandlerViewModelSetIsKnoxAvailableFingerprint)
+        stubOobeKnoxGates()
     }
 }
