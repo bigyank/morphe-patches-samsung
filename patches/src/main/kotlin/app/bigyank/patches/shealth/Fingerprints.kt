@@ -110,14 +110,10 @@ object SakCheckerIsSupportedFingerprint : Fingerprint(
     parameters = emptyList(),
 )
 
-object SamsungSakCheckerImplFingerprint : Fingerprint(
-    accessFlags = listOf(AccessFlags.PUBLIC),
+object SamsungSakCheckerC6rFingerprint : Fingerprint(
+    definingClass = "Lc6r;",
+    name = "isSakSupported",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "Z",
     parameters = emptyList(),
-    custom = { method, classDef ->
-        method.name == "isSakSupported" &&
-            classDef.interfaces.contains(
-                "Lcom/samsung/android/app/shealth/runtime/contract/SamsungSakChecker;",
-            )
-    },
 )
