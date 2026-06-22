@@ -10,7 +10,7 @@ Morphe patches for **Samsung Health** on Knox-tripped Samsung Galaxy phones — 
 
 ## Patches
 
-Both patches are **on by default** and should stay enabled for Samsung Health 6.32.0.001.
+Both patches are **on by default**. Use the **latest** Samsung Health APK (see supported versions below).
 
 | Patch | What it does |
 |-------|----------------|
@@ -19,11 +19,19 @@ Both patches are **on by default** and should stay enabled for Samsung Health 6.
 
 ## Supported apps
 
-| App | Package | Tested version |
-|-----|---------|----------------|
-| Samsung Health | `com.sec.android.app.shealth` | 6.32.0.001 |
+| App | Package | Supported versions |
+|-----|---------|-------------------|
+| Samsung Health | `com.sec.android.app.shealth` | **6.32.0.001** (latest), 6.31.3.013 |
 
-Download the universal APK from [APKMirror](https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/).
+**Latest release:** [6.32.0.001](https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/samsung-health-6-32-0-001-release/) (April 2026, ~303 MB universal APK). This is the current newest build on APKMirror and Google Play.
+
+Download from [APKMirror](https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/) or extract from your phone (Settings → Apps → Samsung Health → version at bottom).
+
+**Phone shows a different version?** Galaxy Store builds sometimes ship before APKMirror. Check with:
+```bash
+adb shell dumpsys package com.sec.android.app.shealth | grep versionName
+```
+If yours is not listed above, open an issue with the version string — we add `AppTarget` entries as new builds appear.
 
 ## Quick start
 
@@ -55,12 +63,12 @@ Manifest/res may still contain `com.osp.app.signin` in sync-adapter XML; that is
 1. **Force-stop** Morphe Manager.
 2. Set process runtime to **1280 MB** (see quick start).
 3. Close other apps before patching.
-4. Use the latest release — older versions that decoded resources could OOM-loop on device.
+4. Use the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest) (v1.0.12+) — older versions that decoded resources could OOM-loop on device.
 
 ### Login still fails
 
 - Confirm **both** patches are enabled.
-- Check logcat for `AccountManagerProvider` / `SignatureInfoDbHelper` — if those lines appear, the account patch did not apply; update to the latest release.
+- Check logcat for `AccountManagerProvider` / `SignatureInfoDbHelper` — if those lines appear, the account patch did not apply; update to the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest).
 - Uninstall stock Health before installing the patched APK.
 
 ## Important notes
@@ -87,6 +95,7 @@ GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 **🎯 Supported versions:**
 
 | 6.32.0.001 |
+| 6.31.3.013 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |

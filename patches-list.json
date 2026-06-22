@@ -21,6 +21,12 @@
               "isExperimental": false,
               "minSdk": null,
               "description": null
+            },
+            {
+              "version": "6.31.3.013",
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
             }
           ]
         }
@@ -43,6 +49,12 @@
           "targets": [
             {
               "version": "6.32.0.001",
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "6.31.3.013",
               "isExperimental": false,
               "minSdk": null,
               "description": null
