@@ -22,6 +22,13 @@ private fun String.replaceSigninPackage(): String =
 private fun isStringConstantOpcode(opcode: Opcode): Boolean =
     opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
 
+private data class Replacement(
+    val index: Int,
+    val register: Int,
+    val opcode: Opcode,
+    val value: String,
+)
+
 /**
  * Same smali workaround as [SamsungAppsPatcher wearable-patcher.sh](https://github.com/adil192/SamsungAppsPatcher).
  *
@@ -49,10 +56,11 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
                             ?: return@forEachIndexed
                         if (SAMSUNG_ACCOUNT_PACKAGE !in string) return@forEachIndexed
                         add(
-                            Triple(
-                                index,
-                                (instruction as OneRegisterInstruction).registerA,
-                                instruction.opcode,
+                            Replacement(
+                                index = index,
+                                register = (instruction as OneRegisterInstruction).registerA,
+                                opcode = instruction.opcode,
+                                value = string.replaceSigninPackage(),
                             ),
                         )
                     }
@@ -74,16 +82,13 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
                 val mutableMethod = mutableClass.methods.first { candidate ->
                     MethodUtil.methodSignaturesMatch(candidate, method)
                 }
-                replacements.sortedByDescending { it.first }.forEach { (index, register, opcode) ->
-                    val originalString = (
-                        method.implementation!!.instructions[index] as ReferenceInstruction
-                        ).reference as StringReference
+                replacements.sortedByDescending { it.index }.forEach { replacement ->
                     mutableMethod.replaceInstruction(
-                        index,
+                        replacement.index,
                         BuilderInstruction21c(
-                            opcode,
-                            register,
-                            ImmutableStringReference(originalString.string.replaceSigninPackage()),
+                            replacement.opcode,
+                            replacement.register,
+                            ImmutableStringReference(replacement.value),
                         ),
                     )
                 }
