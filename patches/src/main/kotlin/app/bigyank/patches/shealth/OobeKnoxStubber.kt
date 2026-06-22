@@ -85,7 +85,7 @@ private fun isKnoxHandlerViewModelKnoxFlagSetter(classDef: ClassDef, method: Met
 private fun isRootedFileCheck(method: Method): Boolean {
     if (method.returnType != "Z" || method.parameterTypes != listOf("Ljava/io/File;")) return false
     if (!AccessFlags.STATIC.isSet(method.accessFlags)) return false
-    return method.stringConstants().any { "$this$isRooted" in it }
+    return method.stringConstants().any { "${'$'}this${'$'}isRooted" in it }
 }
 
 private fun Method.stringConstants(): Set<String> {
