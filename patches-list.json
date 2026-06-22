@@ -1,5 +1,31 @@
 {
-  "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "0.0.0",
-  "patches": []
+  "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs.",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "name": "Disable Knox integrity checks",
+      "description": "Bypass Knox, root, warranty bit, and SAK checks so Samsung Health runs on Knox-tripped devices (0x1) without root.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.sec.android.app.shealth",
+          "name": "Samsung Health",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#1DC9A0",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "6.32.0.001",
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    }
+  ]
 }

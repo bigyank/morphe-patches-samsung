@@ -57,10 +57,21 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). To add a new Samsung Health version, tes
 GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+<details open>
+<summary>📦 Samsung Health&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
 
-#### A list of your patches will be automatically shown here after your first patches release is created.
+**🎯 Supported versions:**
 
-&nbsp;
+| 6.32.0.001 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Disable Knox integrity checks](#disable-knox-integrity-checks) | Bypass Knox, root, warranty bit, and SAK checks so Samsung Health runs on Knox-tripped devices (0x1) without root. |  |
+
+</details>
 
 <!-- PATCHES_END -->
 
