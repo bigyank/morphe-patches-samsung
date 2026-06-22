@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.16...v1.1.0) (2026-06-22)
+
+### ✨ New Features
+
+* stable v1.1.0 Samsung Health patch bundle for Knox 0x1 ([b09fab4](https://github.com/bigyank/morphe-patches-samsung/commit/b09fab484ab00cada5ec1855c58e22ec8838cde7))
+
 ## 1.0.0 (2026-06-22)
 
 ### 🐛 Bug Fixes
