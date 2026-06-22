@@ -12,30 +12,12 @@ import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11n
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
 
-context(_: BytecodePatchContext)
-internal fun stubReturnFalse(fingerprint: Fingerprint) {
-    fingerprint.stubZeroReturn(returnObject = false)
+internal fun BytecodePatchContext.stubReturnFalse(fingerprint: Fingerprint) {
+    stubZeroReturn(fingerprint, returnObject = false)
 }
 
-context(_: BytecodePatchContext)
-internal fun stubZeroReturn(fingerprint: Fingerprint, returnObject: Boolean) {
-    fingerprint.stubZeroReturn(returnObject = returnObject)
-}
-
-context(_: BytecodePatchContext)
-internal fun Fingerprint.replaceMethodBody(stubBody: String) {
-    method.apply {
-        val impl = implementation as? MutableMethodImplementation
-            ?: throw PatchException("Failed to replace $name: no method implementation")
-        impl.clearExceptionHandlers()
-        removeInstructions(0, impl.instructions.count())
-        addInstructions(0, stubBody)
-    }
-}
-
-context(_: BytecodePatchContext)
-private fun Fingerprint.stubZeroReturn(returnObject: Boolean) {
-    method.apply {
+internal fun BytecodePatchContext.stubZeroReturn(fingerprint: Fingerprint, returnObject: Boolean) {
+    fingerprint.method.apply {
         fun replaceBodyInPlace(body: String) {
             val impl = implementation as? MutableMethodImplementation
                 ?: throw PatchException("Failed to replace $name: no method implementation")
@@ -71,6 +53,16 @@ private fun Fingerprint.stubZeroReturn(returnObject: Boolean) {
         if (!replaced) {
             replaceBodyInPlace(stubBody)
         }
+    }
+}
+
+internal fun BytecodePatchContext.replaceMethodBody(fingerprint: Fingerprint, stubBody: String) {
+    fingerprint.method.apply {
+        val impl = implementation as? MutableMethodImplementation
+            ?: throw PatchException("Failed to replace $name: no method implementation")
+        impl.clearExceptionHandlers()
+        removeInstructions(0, impl.instructions.count())
+        addInstructions(0, stubBody)
     }
 }
 

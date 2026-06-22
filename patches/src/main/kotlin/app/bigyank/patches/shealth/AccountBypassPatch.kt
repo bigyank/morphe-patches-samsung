@@ -27,8 +27,10 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
         stubReturnFalse(UtilGetSupportAccountManagerProviderFingerprint)
         stubReturnFalse(UtilIsAccountSignedInFromAccountManagerProviderFingerprint)
 
-        SamsungAccountUtilsGetSamsungAccountIdFingerprint.replaceMethodBody(
-            """
+        SamsungAccountUtilsGetSamsungAccountIdFingerprint.let { fingerprint ->
+            replaceMethodBody(
+                fingerprint,
+                """
             invoke-static {p1}, Landroid/accounts/AccountManager;->get(Landroid/content/Context;)Landroid/accounts/AccountManager;
             move-result-object v0
             const-string v1, "$DEVICE_SAMSUNG_ACCOUNT_TYPE"
@@ -44,7 +46,8 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
             const/4 v0, 0x0
             return-object v0
             """.trimIndent(),
-        )
+            )
+        }
 
         replaceSigninPackageInDex()
     }
