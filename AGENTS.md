@@ -7,7 +7,7 @@ Handoff doc for agents continuing work on **Samsung Health Morphe patches**. Rea
 | Item | Value |
 |------|--------|
 | **Repo** | https://github.com/bigyank/morphe-patches-samsung |
-| **Latest release** | **v1.0.16** — use this or newer |
+| **Latest release** | **v1.1.0** — stable; Knox 0x1 device-verified |
 | **Morphe plugin** | `app.morphe.patches` 1.3.0 |
 | **Target app** | Samsung Health `com.sec.android.app.shealth` — **latest: 6.32.0.001** (also 6.31.3.013) |
 | **User scenario** | Knox tripped (0x1), **unrooted** Samsung phone; stock Health blocks Knox/integrity; patched Health must launch, login, and sync |
@@ -261,8 +261,9 @@ gh run list --repo bigyank/morphe-patches-samsung --limit 3
 
 ---
 
-## Current status (as of v1.0.16)
+## Current status (as of v1.1.0)
 
 - **CI:** green (`./gradlew :patches:buildAndroid generatePatchesList clean`)
-- **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1 (v1.0.15+)
+- **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1
+- **Stable target:** Samsung Health 6.32.0.001 / 6.31.3.013 with both default-on patches
 - **Open work:** separate Wearable Morphe repo if expanding scope — see [AUDIT.md](./AUDIT.md)
