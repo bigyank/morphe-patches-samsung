@@ -1,3 +1,9 @@
+## [1.0.15](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.14...v1.0.15) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* **shealth:** scan dex for OOBE Knox gates instead of obfuscated fingerprints ([7e0faff](https://github.com/bigyank/morphe-patches-samsung/commit/7e0faff49189d748b9237814566fb062b8f4e3fa))
+
 ## [1.0.14](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.13...v1.0.14) (2026-06-22)
 
 ### 🚀 Updated App Support
