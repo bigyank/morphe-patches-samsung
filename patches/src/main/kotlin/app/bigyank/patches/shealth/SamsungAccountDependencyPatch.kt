@@ -37,9 +37,8 @@ val bypassSamsungAccountSignatureCheckPatch = resourcePatch(
             execute {
                 classDefForEach { classDef ->
                     val mutableClass = mutableClassDefBy(classDef)
-                    classDef.methods.forEachIndexed { methodIndex, method ->
-                        val implementation = method.implementation ?: return@forEachIndexed
-                        val mutableMethod = mutableClass.methods[methodIndex]
+                    mutableClass.methods.forEach { mutableMethod ->
+                        val implementation = mutableMethod.implementation ?: return@forEach
 
                         implementation.instructions.forEachIndexed { index, instruction ->
                             if (instruction.opcode != Opcode.CONST_STRING) return@forEachIndexed
