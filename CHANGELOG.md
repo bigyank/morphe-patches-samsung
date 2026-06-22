@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.10...v1.0.11) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* compile account provider stubs using reflection like Knox patch ([8f6447d](https://github.com/bigyank/morphe-patches-samsung/commit/8f6447d9df4517fe7529fc3d2bbc38f0be4f2993))
+* dex-only account bypass with provider stubs to avoid OOM loop ([479c339](https://github.com/bigyank/morphe-patches-samsung/commit/479c339bf4543e9ae9fc39fc3c139e143c7236f5))
+
 ## [1.0.10](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.9...v1.0.10) (2026-06-22)
 
 ### 🐛 Bug Fixes
