@@ -1,3 +1,11 @@
+## [1.0.5](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.4...v1.0.5) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* build Mac-style stubs with dexlib2 instruction builders ([b044de2](https://github.com/bigyank/morphe-patches-samsung/commit/b044de2922712a0297d4760e15f7ed2afdfbdfa7))
+* compile Mac-style stubs inside execute context ([65716f4](https://github.com/bigyank/morphe-patches-samsung/commit/65716f494272a378b48f7db496651152644fa7c3))
+* match macOS apktool stubs to restore account sign-in ([4f812a2](https://github.com/bigyank/morphe-patches-samsung/commit/4f812a2c6c7405eb6b40aa96a99db0da24b82068))
+
 ## [1.0.4](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.3...v1.0.4) (2026-06-22)
 
 ### 🐛 Bug Fixes
