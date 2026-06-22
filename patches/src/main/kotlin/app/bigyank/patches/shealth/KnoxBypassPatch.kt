@@ -6,7 +6,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.iface.Method
 
 /**
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
@@ -30,39 +29,20 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
             return if (registerCount <= 1) "p0" else "v0"
         }
 
-        fun stubBooleanFalse(target: Method) {
-            target.apply {
-                implementation?.let { impl ->
-                    removeInstructions(0, impl.instructions.count())
-                    val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
-                    addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
-                }
+        KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn-object $reg")
             }
         }
-
-        fun stubIntZero(target: Method) {
-            target.apply {
-                implementation?.let { impl ->
-                    removeInstructions(0, impl.instructions.count())
-                    val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
-                    addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
-                }
+        KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
             }
         }
-
-        fun stubNullReference(target: Method) {
-            target.apply {
-                implementation?.let { impl ->
-                    removeInstructions(0, impl.instructions.count())
-                    val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
-                    addInstructions(0, "const/4 $reg, 0x0\nreturn-object $reg")
-                }
-            }
-        }
-
-        stubNullReference(KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method)
-        stubIntZero(KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method)
-
         listOf(
             KnoxAdapterIsKnoxAvailableFingerprint,
             KnoxAdapterIsKnoxAvailableCoreFingerprint,
@@ -72,14 +52,45 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
             KnoxControlIsKnoxAvailableFingerprint,
             IKnoxControlProxyIsKnoxAvailableFingerprint,
             SakCheckerIsSupportedFingerprint,
-        ).forEach { stubBooleanFalse(it.method) }
-
-        stubIntZero(IcccAdapterCheckKnoxCompromisedFingerprint.method)
-        stubNullReference(KnoxControlCheckKnoxCompromisedFingerprint.method)
-        stubIntZero(KnoxControlCheckWarrantyBitFingerprint.method)
+        ).forEach { fingerprint ->
+            fingerprint.method.apply {
+                implementation?.let { impl ->
+                    removeInstructions(0, impl.instructions.count())
+                    val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                    addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
+                }
+            }
+        }
+        IcccAdapterCheckKnoxCompromisedFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
+            }
+        }
+        KnoxControlCheckKnoxCompromisedFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn-object $reg")
+            }
+        }
+        KnoxControlCheckWarrantyBitFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
+            }
+        }
 
         // Only patch c6r — sl9 also implements SamsungSakChecker but is a shared
         // synthetic delegate with .locals 0; rewriting it with v0 crashes at startup.
-        stubBooleanFalse(SamsungSakCheckerC6rFingerprint.method)
+        SamsungSakCheckerC6rFingerprint.method.apply {
+            implementation?.let { impl ->
+                removeInstructions(0, impl.instructions.count())
+                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
+            }
+        }
     }
 }
