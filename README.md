@@ -85,7 +85,7 @@ The original fork ships this keystore **in the repo** (not a secret — it is a 
 
 After import, all Morphe patches use SamsungPatch signing until you change the keystore.
 
-The Mac/PC patcher also rewrites manifest/res XML via apktool; this Morphe patch covers dex (const-strings, field defaults, and prefixed strings like `com.osp.app.signin.service.*`) without decoding resources, so Morphe Manager does not OOM on Health’s ~300 MB APK.
+The Mac/PC patcher rewrites manifest/res XML as well as dex. Morphe must decode resources for this patch (same as v1.0.6). Set Morphe process memory to **1280 MB** before patching on device; if it OOMs, patch with Morphe CLI on a PC or use `patch-shealth-632.sh`.
 
 If patching still fails with out-of-memory, close other apps and retry, or patch on a PC with [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) and sideload the APK.
 
