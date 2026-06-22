@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.2...v1.0.3) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* avoid sl9 SAK stub that caused startup VerifyError ([c8874a8](https://github.com/bigyank/morphe-patches-samsung/commit/c8874a8dcddc7e6ed29f5e90f90a70246e0ab2da))
+* inline register-aware stubs on MutableMethod apply receiver ([59fffa5](https://github.com/bigyank/morphe-patches-samsung/commit/59fffa50f6240247159a07e3bf069e14ffac1dab))
+* keep register-safe stubs inside patch execute context ([f37f4aa](https://github.com/bigyank/morphe-patches-samsung/commit/f37f4aa295762353f2212934793a8e635726cc6a))
+
 ## [1.0.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.1...v1.0.2) (2026-06-22)
 
 ### 🐛 Bug Fixes
