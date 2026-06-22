@@ -117,3 +117,35 @@ object SamsungSakCheckerC6rFingerprint : Fingerprint(
     returnType = "Z",
     parameters = emptyList(),
 )
+
+object SamsungAccountUtilsIsAccountProviderSupportedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/samsungaccount/SamsungAccountUtils;",
+    name = "isAccountProviderSupported",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object SamsungAccountUtilsGetSamsungAccountIdFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/samsungaccount/SamsungAccountUtils;",
+    name = "getSamsungAccountId",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "Ljava/lang/String;",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object UtilGetSupportAccountManagerProviderFingerprint : Fingerprint(
+    definingClass = "Lcom/osp/app/signin/sasdk/common/Util;",
+    name = "getSupportAccountManagerProvider",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object UtilIsAccountSignedInFromAccountManagerProviderFingerprint : Fingerprint(
+    definingClass = "Lcom/osp/app/signin/sasdk/common/Util;",
+    name = "isAccountSignedInFromAccountManagerProvider",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
+)
