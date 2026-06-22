@@ -62,14 +62,24 @@ val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
     execute {
         fun stubReturnFalse(fingerprint: app.morphe.patcher.Fingerprint) {
             fingerprint.method.apply {
-                implementation?.let { impl ->
-                    impl.clearExceptionHandlers()
-                    removeInstructions(0, impl.instructions.count())
-                    addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-                } ?: run {
-                    val registerCount = maxOf(1, parameters.size + if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1)
-                    implementation = MutableMethodImplementation(registerCount).apply {
-                        addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+                val stubBody = "const/4 v0, 0x0\nreturn v0"
+                val registerCount = maxOf(1, parameters.size + if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1)
+                val freshImpl = MutableMethodImplementation(registerCount).apply {
+                    addInstructions(0, stubBody)
+                }
+
+                val replaced = runCatching {
+                    val field = javaClass.getDeclaredField("implementation")
+                    field.isAccessible = true
+                    field.set(this@apply, freshImpl)
+                    true
+                }.getOrDefault(false)
+
+                if (!replaced) {
+                    implementation?.let { impl ->
+                        impl.clearExceptionHandlers()
+                        removeInstructions(0, impl.instructions.count())
+                        addInstructions(0, stubBody)
                     }
                 }
             }
