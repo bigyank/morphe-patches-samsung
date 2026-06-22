@@ -1,11 +1,10 @@
 package app.bigyank.patches.shealth
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.instructions
-import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 
 /**
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
@@ -22,6 +21,13 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_SHEALTH)
 
     execute {
+        fun stubRegisterCount(accessFlags: Int, parameterCount: Int, originalRegisterCount: Int): Int {
+            if (AccessFlags.STATIC.isSet(accessFlags)) {
+                return parameterCount + 1
+            }
+            return if (originalRegisterCount <= 1) 1 else 2
+        }
+
         fun returnRegisterName(accessFlags: Int, parameterCount: Int, registerCount: Int): String {
             if (AccessFlags.STATIC.isSet(accessFlags)) {
                 return "v$parameterCount"
@@ -30,16 +36,16 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
         }
 
         KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn-object $reg")
             }
         }
         KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
             }
         }
@@ -54,41 +60,38 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
             SakCheckerIsSupportedFingerprint,
         ).forEach { fingerprint ->
             fingerprint.method.apply {
-                implementation?.let { impl ->
-                    removeInstructions(0, impl.instructions.count())
-                    val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+                val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+                val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+                implementation = MutableMethodImplementation(registerCount).apply {
                     addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
                 }
             }
         }
         IcccAdapterCheckKnoxCompromisedFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
             }
         }
         KnoxControlCheckKnoxCompromisedFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn-object $reg")
             }
         }
         KnoxControlCheckWarrantyBitFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
             }
         }
-
-        // Only patch c6r — sl9 also implements SamsungSakChecker but is a shared
-        // synthetic delegate with .locals 0; rewriting it with v0 crashes at startup.
         SamsungSakCheckerC6rFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                val reg = returnRegisterName(accessFlags, parameters.size, impl.registerCount)
+            val registerCount = stubRegisterCount(accessFlags, parameters.size, implementation?.registerCount ?: 1)
+            val reg = returnRegisterName(accessFlags, parameters.size, registerCount)
+            implementation = MutableMethodImplementation(registerCount).apply {
                 addInstructions(0, "const/4 $reg, 0x0\nreturn $reg")
             }
         }
