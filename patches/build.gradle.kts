@@ -14,17 +14,12 @@ patches {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
 
-// Separate configuration so gson is available at runtime for the
-// generatePatchesList task but never bundled into the APK.
-val patchListGeneratorClasspath: Configuration by configurations.creating
-
 dependencies {
-    compileOnly(libs.gson)
-    patchListGeneratorClasspath(libs.gson)
+    implementation(libs.gson)
 }
 
 tasks {
@@ -33,11 +28,10 @@ tasks {
 
         dependsOn(build)
 
-        classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
-        mainClass.set("util.PatchListGeneratorKt")
+        classpath = sourceSets["main"].runtimeClasspath
+        mainClass.set("app.morphe.util.PatchListGeneratorKt")
     }
 
-    // Used by gradle-semantic-release-plugin.
     publish {
         dependsOn("generatePatchesList")
     }
