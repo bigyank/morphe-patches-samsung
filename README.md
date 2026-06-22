@@ -85,7 +85,9 @@ The original fork ships this keystore **in the repo** (not a secret — it is a 
 
 After import, all Morphe patches use SamsungPatch signing until you change the keystore.
 
-The Mac/PC patcher applies the same account workaround automatically (`com.osp.app.signin` → `com.notsamsung.dummy` in smali/manifest). Morphe needs the dedicated patch for that; importing the keystore alone is not enough. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
+The Mac/PC patcher also rewrites a few manifest/res XML entries; this Morphe patch covers the dex strings that fix Samsung Account login. It intentionally skips resource decoding so Morphe Manager does not OOM on Health’s ~300 MB APK.
+
+If patching still fails with out-of-memory, close other apps and retry, or patch on a PC with [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) and sideload the APK. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
 
 ### How the PC patcher also uses signatures (two layers)
 
