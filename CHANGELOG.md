@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.8...v1.0.9) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* compile account patch by storing replacement strings during scan ([3f4481b](https://github.com/bigyank/morphe-patches-samsung/commit/3f4481bf486c1e630d2c8acfa98fb4e2ccae22d1))
+* replace all Samsung Account package strings in dex like Mac patcher ([70c353d](https://github.com/bigyank/morphe-patches-samsung/commit/70c353dd78718226785d902823d38d206e2df5f4))
+
 ## [1.0.8](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.7...v1.0.8) (2026-06-22)
 
 ### 🐛 Bug Fixes

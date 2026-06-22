@@ -126,7 +126,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). To add a new Samsung Health version, tes
 GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.8](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.0.8)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.0.9](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.0.9)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
 <details open>
 <summary>📦 Samsung Health&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>

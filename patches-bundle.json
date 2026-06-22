@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-06-22T15:56:01",
-  "description": "## [1.0.8](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.7...v1.0.8) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* scan dex read-only before mutating classes for account bypass ([c1536f8](https://github.com/bigyank/morphe-patches-samsung/commit/c1536f8cefae185ef9628bc7e41012eb77e46807))",
-  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.8/patches-1.0.8.mpp",
+  "created_at": "2026-06-22T16:32:11",
+  "description": "## [1.0.9](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.8...v1.0.9) (2026-06-22)\n\n### 🐛 Bug Fixes\n\n* compile account patch by storing replacement strings during scan ([3f4481b](https://github.com/bigyank/morphe-patches-samsung/commit/3f4481bf486c1e630d2c8acfa98fb4e2ccae22d1))\n* replace all Samsung Account package strings in dex like Mac patcher ([70c353d](https://github.com/bigyank/morphe-patches-samsung/commit/70c353dd78718226785d902823d38d206e2df5f4))",
+  "download_url": "https://github.com/bigyank/morphe-patches-samsung/releases/download/v1.0.9/patches-1.0.9.mpp",
   "signature_download_url": "",
-  "version": "1.0.8"
+  "version": "1.0.9"
 }
