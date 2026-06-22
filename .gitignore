@@ -119,6 +119,9 @@ gradle-app.setting
 # Ignore vscode config
 .vscode/
 
+# Local Cursor agent skills (not shared via repo)
+.cursor/skills/refine-docs/
+
 # Dependency directories
 node_modules/
 
