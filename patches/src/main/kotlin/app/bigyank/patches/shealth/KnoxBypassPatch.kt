@@ -6,9 +6,8 @@ import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
 /**
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
  *
- * Stubs 14 stable SDK methods (KnoxAdapter, KnoxControl, SakChecker, etc.).
- * Obfuscated OOBE/root helpers are out of scope — these SDK stubs are sufficient
- * for Health 6.32.0.001 on Knox-tripped devices.
+ * Stubs stable SDK methods (KnoxAdapter, KnoxControl, SakChecker, etc.) plus
+ * OOBE popup/root gates so Health 6.32.0.001 runs on Knox-tripped devices (0x1).
  */
 @Suppress("unused")
 val disableKnoxIntegrityChecksPatch = bytecodePatch(
@@ -21,9 +20,11 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
     execute {
         stubZeroReturn(KnoxAdapterCheckKnoxCompromisedExternalFingerprint, returnObject = true)
         stubZeroReturn(KnoxAdapterCheckKnoxCompromisedInternalFingerprint, returnObject = false)
+        stubZeroReturn(KnoxAdapterCheckKnoxInitMigConditionFingerprint, returnObject = false)
         stubZeroReturn(KnoxAdapterIsKnoxAvailableFingerprint, returnObject = false)
         stubZeroReturn(KnoxAdapterIsKnoxAvailableCoreFingerprint, returnObject = false)
         stubZeroReturn(KnoxAdapterIsAksSakMandatoryFingerprint, returnObject = false)
+        stubZeroReturn(KnoxAdapterIsLicenseActivatedFingerprint, returnObject = false)
         stubZeroReturn(KnoxAdapterShouldUseKnoxFingerprint, returnObject = false)
         stubZeroReturn(KnoxAdapterIsSupportedTimaVersionFingerprint, returnObject = false)
         stubZeroReturn(IcccAdapterCheckKnoxCompromisedFingerprint, returnObject = false)
@@ -31,7 +32,14 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
         stubZeroReturn(KnoxControlCheckKnoxCompromisedFingerprint, returnObject = true)
         stubZeroReturn(KnoxControlCheckWarrantyBitFingerprint, returnObject = false)
         stubZeroReturn(IKnoxControlProxyIsKnoxAvailableFingerprint, returnObject = false)
+        stubZeroReturn(IKnoxControlProxyRequestKeyInitForKnoxFingerprint, returnObject = false)
         stubZeroReturn(SakCheckerIsSupportedFingerprint, returnObject = false)
         stubZeroReturn(SamsungSakCheckerC6rFingerprint, returnObject = false)
+
+        stubReturnVoid(OobeUtilHShowKnoxExceptionPopupFingerprint)
+        stubReturnVoid(OobeUtilHShowKnoxIntegrityErrorPopupFingerprint)
+        stubZeroReturn(HomeAppCloseActivityIsDeviceRootedFingerprint, returnObject = false)
+        stubZeroReturn(KnoxHandlerViewModelGetIsKnoxAvailableFingerprint, returnObject = false)
+        stubReturnVoid(KnoxHandlerViewModelSetIsKnoxAvailableFingerprint)
     }
 }

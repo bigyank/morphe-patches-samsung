@@ -99,16 +99,16 @@ Morphe identifies patches by Kotlin `val` names:
 
 ### Patch 1 — Knox (`KnoxBypassPatch.kt`)
 
-Stubs **14 stable SDK methods** (not R8-renamed app code):
+Stubs **stable SDK methods** plus **OOBE Knox/root gates** (not dynamic root-file scans):
 
-- `KnoxAdapter` (7 methods)
+- `KnoxAdapter` (9 methods incl. `checkKnoxInitMigCondition`, `isLicenseActivated`)
 - `IcccAdapter.checkKnoxCompromised`
 - `KnoxControl` (3 methods)
-- `IKnoxControl$Stub$Proxy.isKnoxAvailable`
-- `SakChecker.isSupported`
-- `c6r.isSakSupported`
+- `IKnoxControl$Stub$Proxy` (`isKnoxAvailable`, `requestKeyInitForKnox`)
+- `SakChecker.isSupported`, `c6r.isSakSupported`
+- OOBE: `home/oobe2/util/h` (Knox popups), `HomeAppCloseActivity.s3`, `KnoxHandlerViewModel.r/z`
 
-**Out of scope:** obfuscated OOBE handlers and dynamic root-file scans. SDK stubs alone suffice for 6.32.0.001 on Morphe.
+**Out of scope:** obfuscated `$this$isRooted` file scans and manifest/res multiuser patches.
 
 ### Patch 2 — Account (`AccountBypassPatch.kt`)
 

@@ -16,6 +16,10 @@ internal fun BytecodePatchContext.stubReturnFalse(fingerprint: Fingerprint) {
     stubZeroReturn(fingerprint, returnObject = false)
 }
 
+internal fun BytecodePatchContext.stubReturnVoid(fingerprint: Fingerprint) {
+    replaceMethodBody(fingerprint, "return-void")
+}
+
 internal fun BytecodePatchContext.stubZeroReturn(fingerprint: Fingerprint, returnObject: Boolean) {
     fingerprint.method.apply {
         fun replaceBodyInPlace(body: String) {

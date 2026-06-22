@@ -118,6 +118,78 @@ object SamsungSakCheckerC6rFingerprint : Fingerprint(
     parameters = emptyList(),
 )
 
+object KnoxAdapterCheckKnoxInitMigConditionFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "checkKnoxInitMigCondition",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "I",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterIsLicenseActivatedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "isLicenseActivated",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object IKnoxControlProxyRequestKeyInitForKnoxFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/IKnoxControl\$Stub\$Proxy;",
+    name = "requestKeyInitForKnox",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Z",
+    parameters = listOf(
+        "Lcom/samsung/android/sdk/healthdata/privileged/IResultObserver;",
+        "Z",
+    ),
+)
+
+// ── OOBE Knox / root gates (stable class names in 6.32) ──────────────────────
+
+object OobeUtilHShowKnoxExceptionPopupFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/app/shealth/home/oobe2/util/h;",
+    name = "p",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf("Landroid/app/Activity;"),
+)
+
+object OobeUtilHShowKnoxIntegrityErrorPopupFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/app/shealth/home/oobe2/util/h;",
+    name = "q",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf(
+        "Landroid/app/Activity;",
+        "Lcom/samsung/android/app/shealth/home/oobe2/viewmodel/KnoxHandlerViewModel\$KnoxInitResult;",
+    ),
+)
+
+object HomeAppCloseActivityIsDeviceRootedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/app/shealth/home/oobe2/view/HomeAppCloseActivity;",
+    name = "s3",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object KnoxHandlerViewModelGetIsKnoxAvailableFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/app/shealth/home/oobe2/viewmodel/KnoxHandlerViewModel;",
+    name = "r",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object KnoxHandlerViewModelSetIsKnoxAvailableFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/app/shealth/home/oobe2/viewmodel/KnoxHandlerViewModel;",
+    name = "z",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf("Z"),
+)
+
 // ── Samsung Account provider bypass ──────────────────────────────────────────
 
 object SamsungAccountUtilsIsAccountProviderSupportedFingerprint : Fingerprint(
