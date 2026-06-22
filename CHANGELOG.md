@@ -1,3 +1,9 @@
+## [1.0.13](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.12...v1.0.13) (2026-06-22)
+
+### 🚀 Updated App Support
+
+* **shealth:** add Samsung Health 6.31.3.013 compatibility target ([d5fccf6](https://github.com/bigyank/morphe-patches-samsung/commit/d5fccf6e8dccd1cff97e52ebd812496f5493b8db))
+
 ## [1.0.12](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.11...v1.0.12) (2026-06-22)
 
 ### 🐛 Bug Fixes
