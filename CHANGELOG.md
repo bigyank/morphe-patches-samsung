@@ -1,3 +1,9 @@
+## [1.0.14](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.13...v1.0.14) (2026-06-22)
+
+### 🚀 Updated App Support
+
+* **shealth:** add OOBE Knox stubs and extra SDK integrity bypasses ([7d03ded](https://github.com/bigyank/morphe-patches-samsung/commit/7d03ded0372037fb859e2d427fbce4d48e6a2a9d))
+
 ## [1.0.13](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.12...v1.0.13) (2026-06-22)
 
 ### 🚀 Updated App Support
