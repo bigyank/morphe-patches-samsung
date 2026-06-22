@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.6...v1.0.7) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* make Samsung Account bypass dex-only to prevent Morphe OOM ([535550f](https://github.com/bigyank/morphe-patches-samsung/commit/535550f01fe06d992d038b8fbf6d8fcf311bf1ec))
+
 ## [1.0.6](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.5...v1.0.6) (2026-06-22)
 
 ### 🐛 Bug Fixes

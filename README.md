@@ -116,7 +116,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). To add a new Samsung Health version, tes
 GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.6](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.0.6)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.0.7](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.0.7)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
 <details open>
 <summary>📦 Samsung Health&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -128,7 +128,7 @@ GPLv3 — see [LICENSE](LICENSE). Not affiliated with Samsung or Morphe.
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Bypass Samsung Account signature check](#bypass-samsung-account-signature-check) | Routes Samsung Account SDK calls away from com.osp.app.signin so login works on patched APKs. Matches the Mac/PC SamsungAppsPatcher build (required alongside the SamsungPatch keystore). |  |
+| [Bypass Samsung Account signature check](#bypass-samsung-account-signature-check) | Replaces com.osp.app.signin with com.notsamsung.dummy in dex (same as PC patcher). Dex-only to avoid OOM on large APKs. Use with the SamsungPatch keystore. |  |
 | [Disable Knox integrity checks](#disable-knox-integrity-checks) | Bypass Knox, root, warranty bit, and SAK checks so Samsung Health runs on Knox-tripped devices (0x1) without root. |  |
 
 </details>
