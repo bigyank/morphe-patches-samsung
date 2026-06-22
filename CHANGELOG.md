@@ -1,3 +1,9 @@
+## [1.0.10](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.9...v1.0.10) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* restore manifest/res replacement for Samsung Account bypass ([fefc9e9](https://github.com/bigyank/morphe-patches-samsung/commit/fefc9e9df0e73494ab8a71582c13f9a4defae49f))
+
 ## [1.0.9](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.8...v1.0.9) (2026-06-22)
 
 ### 🐛 Bug Fixes

@@ -1,12 +1,14 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs.",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "patches": [
     {
       "name": "Bypass Samsung Account signature check",
-      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex (same as PC patcher). Use with the SamsungPatch keystore. If on-device patching loops or OOMs, patch on a PC instead.",
+      "description": "Replaces com.osp.app.signin with com.notsamsung.dummy in dex and manifest/res (same as PC patcher). Use with the SamsungPatch keystore. Needs 512MB+ Morphe process memory.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.sec.android.app.shealth",
