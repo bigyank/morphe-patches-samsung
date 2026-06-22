@@ -3,13 +3,14 @@
 ## Adding a new Samsung Health version
 
 1. Download the target APK from APKMirror.
-2. Decompile with `apktool d shealth.apk` (or use Morphe's dex dump).
+2. Decompile with `apktool d shealth.apk` or inspect DEX with [jadx-morphe](https://github.com/hoo-dles/jadx-morphe).
 3. Verify Knox-related classes still exist at the paths in `Fingerprints.kt`.
 4. Verify Samsung Account provider methods (`SamsungAccountUtils`, `com.osp.app.signin.sasdk.common.Util`) still match the fingerprints.
-5. Verify OOBE heuristics in `OobeKnoxStubber.kt` still match (Knox popup strings, `HomeAppCloseActivity`, `KnoxHandlerViewModel`).
-6. Add `AppTarget(version = "x.y.z")` to `Constants.kt`.
-7. Test both patches with Morphe Manager on a Knox 0x1 device — confirm launch, login, and sync.
-8. Open a PR with device model, Knox status, and test results.
+5. Verify OOBE heuristics in `OobeKnoxStubber.kt` still match (Knox popup strings, `HomeAppCloseActivity`, `KnoxHandlerViewModel`, `$this$isRooted`).
+6. Cross-check against [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) `apply_shealth_knox_bypass.py` if gates moved.
+7. Add `AppTarget(version = "x.y.z")` to `Constants.kt`.
+8. Test both patches with Morphe Manager on a Knox 0x1 device — confirm launch, login, and sync.
+9. Open a PR with device model, Knox status, Health version, patch bundle version, and test results.
 
 ## Patch layout
 
@@ -32,6 +33,15 @@ The Knox patch stubs **17 stable SDK methods** (fingerprints) plus **OOBE gates*
 The account patch is **dex-only** by design. Do not re-add `resourcePatch` for manifest/res replacement — it causes OOM on ~300 MB Health APKs during on-device patching.
 
 Prefer **new fingerprints** for stable SDK methods; use **targeted dex scans** only for obfuscated app code (OOBE pattern established in `OobeKnoxStubber.kt`).
+
+## Tooling
+
+| Tool | Use |
+| :--- | :--- |
+| [jadx-morphe](https://github.com/hoo-dles/jadx-morphe) | Find method signatures and const-strings when adding fingerprints |
+| [Morphe documentation](https://github.com/MorpheApp/morphe-documentation/blob/main/docs/morphe-resources/guide.md) | Patch authoring basics |
+| `adb logcat` | Verify `OOBEManager`, `MeSaSyncManager`, `AccountManagerProvider` after patching |
+| SamsungAppsPatcher scripts | Parity reference for Knox gate patterns (PC-side, not required for Morphe users) |
 
 ## Commit messages
 
