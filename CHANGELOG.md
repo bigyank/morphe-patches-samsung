@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.0...v1.0.1) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* drop dev backmerge from semantic-release config ([d900692](https://github.com/bigyank/morphe-patches-samsung/commit/d90069234222e823cd0a35033c951073b73efba5))
+
 ## 1.0.0 (2026-06-22)
 
 ### 🐛 Bug Fixes
