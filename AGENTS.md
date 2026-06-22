@@ -7,13 +7,13 @@ Handoff doc for agents continuing work on **Samsung Health Morphe patches**. Rea
 | Item | Value |
 |------|--------|
 | **Repo** | https://github.com/bigyank/morphe-patches-samsung |
-| **Latest release** | **v1.0.12** — use this or newer |
+| **Latest release** | **v1.0.15** — use this or newer |
 | **Morphe plugin** | `app.morphe.patches` 1.3.0 |
 | **Target app** | Samsung Health `com.sec.android.app.shealth` — **latest: 6.32.0.001** (also 6.31.3.013) |
 | **User scenario** | Knox tripped (0x1), **unrooted** Samsung phone; stock Health blocks Knox/integrity; patched Health must launch, login, and sync |
 | **Patch source URL** | `https://github.com/bigyank/morphe-patches-samsung` |
 
-**Working setup (device-verified on v1.0.12):** Morphe Manager, **both patches enabled**, process runtime **1280 MB**, default Morphe keystore (no custom JKS). Test device: SM-S911B, Android 16, Knox 0x1.
+**Working setup (device-verified on v1.0.15):** Morphe Manager, **both patches enabled**, process runtime **1280 MB**, default Morphe keystore (no custom JKS). Test device: SM-S911B, Android 16, Knox 0x1 — launch, account sync, Galaxy Fit3 wearable sync confirmed.
 
 ---
 
@@ -25,7 +25,7 @@ Patch Samsung Health **on-device** via [Morphe Manager](https://morphe.software/
 
 ### Two patches (both default-on)
 
-1. **Disable Knox integrity checks** — stubs 14 Knox/SAK/warranty SDK methods so Health passes integrity gates.
+1. **Disable Knox integrity checks** — stubs 17 Knox/SAK/warranty SDK methods plus content-scanned OOBE gates (`OobeKnoxStubber.kt`).
 2. **Bypass Samsung Account provider checks** — dex string replace + provider stubs so login does not hit Samsung Account’s signature-checked `AccountManagerProvider`.
 
 ### Root-cause journey (read this to avoid repeating mistakes)
@@ -37,6 +37,7 @@ Patch Samsung Health **on-device** via [Morphe Manager](https://morphe.software/
 | Thought custom keystore was required | Red herring for Morphe; real blocker was provider path | Default Morphe keystore works with account patch |
 | Morphe OOM / patch loop on device | `resourcePatch` decodes ~300 MB Health resources | **Dex-only** account patch; never re-add manifest/res decode (v1.0.10 was broken) |
 | CI compile failures after refactor | Morphe 1.3 needs `BytecodePatchContext` for `fingerprint.method` and smali `addInstructions` | Extension functions on `BytecodePatchContext`, logic inside `fingerprint.method.apply { }` (v1.0.12) |
+| OOBE fingerprint mismatch on 6.32 | Hardcoded `util/h.p` obfuscated per build | Content-scanned `OobeKnoxStubber.kt` (v1.0.15) |
 
 ### Refactor completed (main branch)
 
@@ -61,6 +62,12 @@ Semantic-release on push to `main`. Conventional commits: `fix:`, `feat:`, `refa
 | **1.0.10** | **Broken** — restored `resourcePatch` → OOM on device |
 | **1.0.11** | **Working** — provider stubs + dex-only; login/sync confirmed |
 | **1.0.12** | Refactor + `BytecodePatchContext` extension helpers; CI green |
+| **1.0.13** | Samsung Health 6.31.3.013 compatibility target |
+| **1.0.14** | Extra Knox SDK stubs + OOBE fingerprints (OOBE hardcoded names failed on 6.32) |
+| **1.0.15** | OOBE content scan fix; SM-S911B launch + account + Fit3 sync verified |
+| **1.0.16** | `$this$isRooted` dex scan + AUDIT.md; full SamsungAppsPatcher Health parity (dex-only) |
+
+Full comparison with SamsungAppsPatcher: [AUDIT.md](./AUDIT.md).
 
 Full machine-generated log: [CHANGELOG.md](./CHANGELOG.md).
 
@@ -84,6 +91,7 @@ morphe-patches-samsung/
 ├── .github/workflows/release.yml    # build + semantic-release
 ├── README.md                        # User docs
 ├── CONTRIBUTING.md                  # Contributor notes
+├── AUDIT.md                         # Comparison vs SamsungAppsPatcher + roadmap
 └── AGENTS.md                        # This file
 ```
 
@@ -107,9 +115,9 @@ Stubs **stable SDK methods** plus **OOBE Knox/root gates** (not dynamic root-fil
 - `KnoxControl` (3 methods)
 - `IKnoxControl$Stub$Proxy` (`isKnoxAvailable`, `requestKeyInitForKnox`)
 - `SakChecker.isSupported`, `c6r.isSakSupported`
-- OOBE: content-scanned Knox popups, `HomeAppCloseActivity` root check, `KnoxHandlerViewModel` flag getter/setter (see `OobeKnoxStubber.kt`)
+- OOBE: content-scanned Knox popups, `HomeAppCloseActivity` root check, `KnoxHandlerViewModel` flag getter/setter, `$this$isRooted` file checks (see `OobeKnoxStubber.kt`)
 
-**Out of scope:** obfuscated `$this$isRooted` file scans and manifest/res multiuser patches.
+**Out of scope:** manifest/res multiuser patches and custom cert allowlists.
 
 ### Patch 2 — Account (`AccountBypassPatch.kt`)
 
@@ -182,7 +190,7 @@ CI runs the same Gradle command on push to `main`, then semantic-release publish
 
 ### Login fails after patch
 
-- Confirm both patches enabled and **latest release ([v1.0.12](https://github.com/bigyank/morphe-patches-samsung/releases/latest))**.
+- Confirm both patches enabled and **latest release ([v1.0.15](https://github.com/bigyank/morphe-patches-samsung/releases/latest))**.
 - Capture logcat during login; search for `SignatureInfoDbHelper` / `AccountManagerProvider`.
 - If provider lines appear → account patch did not apply (wrong version, patch disabled, or fingerprint mismatch on new Health build).
 
@@ -252,8 +260,8 @@ gh run list --repo bigyank/morphe-patches-samsung --limit 3
 
 ---
 
-## Current status (as of v1.0.12)
+## Current status (as of v1.0.16)
 
 - **CI:** green (`./gradlew :patches:buildAndroid generatePatchesList clean`)
-- **Device:** login + sync confirmed on Knox 0x1 with default Morphe keystore (v1.0.12)
-- **Open work:** none required unless targeting new Health version or Wearable plugin scope
+- **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1 (v1.0.15+)
+- **Open work:** separate Wearable Morphe repo if expanding scope — see [AUDIT.md](./AUDIT.md)

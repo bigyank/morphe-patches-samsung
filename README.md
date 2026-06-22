@@ -14,7 +14,7 @@ Both patches are **on by default**. Use the **latest** Samsung Health APK (see s
 
 | Patch | What it does |
 |-------|----------------|
-| **Disable Knox integrity checks** | Stubs Knox availability, warranty bit, root detection, and SAK checks (14 SDK methods) |
+| **Disable Knox integrity checks** | Stubs 17 Knox/SAK SDK methods plus content-scanned OOBE Knox/root gates (see [AUDIT.md](./AUDIT.md)) |
 | **Bypass Samsung Account provider checks** | Replaces `com.osp.app.signin` → `com.notsamsung.dummy` in dex and routes account lookups through Android `AccountManager` instead of Samsung Account's signature-checked provider |
 
 ## Supported apps
@@ -63,7 +63,7 @@ Manifest/res may still contain `com.osp.app.signin` in sync-adapter XML; that is
 1. **Force-stop** Morphe Manager.
 2. Set process runtime to **1280 MB** (see quick start).
 3. Close other apps before patching.
-4. Use the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest) (v1.0.12+) — older versions that decoded resources could OOM-loop on device.
+4. Use the [latest release](https://github.com/bigyank/morphe-patches-samsung/releases/latest) (v1.0.15+) — older versions that decoded resources could OOM-loop on device.
 
 ### Login still fails
 
@@ -77,6 +77,12 @@ Manifest/res may still contain `com.osp.app.signin` in sync-adapter XML; that is
 - **Cloud restore** from Samsung account may hang on Knox 0x1 — cancel restore and use fresh local data.
 - **Galaxy Wearable / Fit 3**: basic band sync often works with stock Wearable + patched Health.
 - Knox status remains tripped at the system level — this only fixes the Health app.
+
+## Comparison with SamsungAppsPatcher
+
+This repo is a Morphe on-device port inspired by the PC-side [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) workflow. Morphe goes further on **Samsung Account login** (provider stubs, not just string replacement) and covers **Health only** — Galaxy Wearable and watch plugin patches remain in the original repo.
+
+Full gap analysis, roadmap, and device verification notes: **[AUDIT.md](./AUDIT.md)**.
 
 ## Contributing
 

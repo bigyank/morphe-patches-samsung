@@ -17,10 +17,11 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
- * Stub OOBE Knox/root gates by scanning dex content instead of hardcoded obfuscated names.
+ * Stub OOBE Knox/root gates and obfuscated root-file checks by scanning dex content.
  *
  * Samsung Health renames classes like `home/oobe2/util/h` per build (`idc`, `h4d`, etc.).
- * Matches the approach in SamsungAppsPatcher's `apply_shealth_knox_bypass.py`.
+ * Root helpers embed the stable Kotlin string `$this$isRooted`. Matches SamsungAppsPatcher's
+ * `apply_shealth_knox_bypass.py`.
  */
 internal fun BytecodePatchContext.stubOobeKnoxGates() {
     classDefForEach { classDef ->
@@ -30,6 +31,7 @@ internal fun BytecodePatchContext.stubOobeKnoxGates() {
                 isHomeAppCloseRootCheck(classDef, method) -> "const/4 v0, 0x0\nreturn v0"
                 isKnoxHandlerViewModelKnoxFlagGetter(classDef, method) -> "const/4 v0, 0x0\nreturn v0"
                 isKnoxHandlerViewModelKnoxFlagSetter(classDef, method) -> "return-void"
+                isRootedFileCheck(method) -> "const/4 v0, 0x0\nreturn v0"
                 else -> return@mapNotNull null
             }
             method to body
@@ -78,6 +80,12 @@ private fun isKnoxHandlerViewModelKnoxFlagSetter(classDef: ClassDef, method: Met
     if (method.returnType != "V" || method.parameterTypes != listOf("Z")) return false
     if (AccessFlags.STATIC.isSet(method.accessFlags)) return false
     return method.usesOpcode(Opcode.IPUT_BOOLEAN)
+}
+
+private fun isRootedFileCheck(method: Method): Boolean {
+    if (method.returnType != "Z" || method.parameterTypes != listOf("Ljava/io/File;")) return false
+    if (!AccessFlags.STATIC.isSet(method.accessFlags)) return false
+    return method.stringConstants().any { "$this$isRooted" in it }
 }
 
 private fun Method.stringConstants(): Set<String> {

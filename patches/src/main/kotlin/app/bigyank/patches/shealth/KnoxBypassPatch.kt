@@ -7,7 +7,7 @@ import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
  *
  * Stubs stable SDK methods (KnoxAdapter, KnoxControl, SakChecker, etc.) plus
- * OOBE popup/root gates so Health 6.32.0.001 runs on Knox-tripped devices (0x1).
+ * OOBE popup/root gates and `$this$isRooted` file checks (content-scanned dex).
  */
 @Suppress("unused")
 val disableKnoxIntegrityChecksPatch = bytecodePatch(
