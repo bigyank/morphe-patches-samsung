@@ -9,7 +9,7 @@ object Constants {
         name = "Samsung Health",
         packageName = "com.sec.android.app.shealth",
         apkFileType = ApkFileType.APK,
-        appIconColor = 0xFF1DC9A0,
+        appIconColor = 0x1DC9A0,
         targets = listOf(
             AppTarget(version = "6.32.0.001"),
         ),
