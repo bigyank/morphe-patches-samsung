@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.3...v1.0.4) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* clear try/catch handlers when stubbing Knox methods ([96736a2](https://github.com/bigyank/morphe-patches-samsung/commit/96736a2b6e3322d9d54c72952b75ffc462130d33))
+* replace method bodies fully to clear try/catch handlers ([559a2c8](https://github.com/bigyank/morphe-patches-samsung/commit/559a2c89996b1b742be935a6a5b8f2c38a7c4593))
+
 ## [1.0.3](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.2...v1.0.3) (2026-06-22)
 
 ### 🐛 Bug Fixes
