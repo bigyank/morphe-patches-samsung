@@ -87,7 +87,17 @@ After import, all Morphe patches use SamsungPatch signing until you change the k
 
 The Mac/PC patcher also rewrites a few manifest/res XML entries; this Morphe patch covers the dex strings that fix Samsung Account login. It intentionally skips resource decoding so Morphe Manager does not OOM on Health’s ~300 MB APK.
 
-If patching still fails with out-of-memory, close other apps and retry, or patch on a PC with [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) and sideload the APK. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
+If patching still fails with out-of-memory, close other apps and retry, or patch on a PC with [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher) and sideload the APK.
+
+### Morphe Manager stuck looping / OOM on Samsung Health
+
+Samsung Health (~300 MB) always hits **Decoding all resources** in Morphe — that step alone can exhaust the patcher heap on phone.
+
+1. **Force-stop** Morphe Manager (kills a stuck patcher loop).
+2. **Settings → System → Process runtime** → enable → set **1280 MB** (not 256 MB).
+3. Free RAM — close other apps before patching.
+4. Try with **only Knox patch** first (disable account patch). If that completes, re-enable account patch on v1.0.8+ (lighter dex scan).
+5. **PC fallback (recommended for Health):** on a Mac/PC run `./patch-shealth-632.sh` in [SamsungAppsPatcher](https://github.com/bigyank/SamsungAppsPatcher), then `adb install` the output. **Use the same key for updates** so you can install over an existing patched Health without wiping data (same rule as ReVanced’s keystore docs).
 
 ### How the PC patcher also uses signatures (two layers)
 

@@ -4,6 +4,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -11,36 +13,51 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 private const val SAMSUNG_ACCOUNT_PACKAGE = "com.osp.app.signin"
 private const val DUMMY_ACCOUNT_PACKAGE = "com.notsamsung.dummy"
 
+private fun Instruction.isSamsungAccountPackageString(): Boolean {
+    if (opcode != Opcode.CONST_STRING) return false
+    val reference = (this as ReferenceInstruction).reference
+    return reference is StringReference && reference.string == SAMSUNG_ACCOUNT_PACKAGE
+}
+
+private fun Method.collectSigninStringReplacements(): List<Pair<Int, Int>> {
+    val implementation = implementation ?: return emptyList()
+    return buildList {
+        implementation.instructions.forEachIndexed { index, instruction ->
+            if (!instruction.isSamsungAccountPackageString()) return@forEachIndexed
+            add(index to (instruction as OneRegisterInstruction).registerA)
+        }
+    }
+}
+
 /**
- * Same smali workaround as [SamsungAppsPatcher wearable-patcher.sh](https://github.com/adil192/SamsungAppsPatcher):
- * replace `com.osp.app.signin` string constants so Health does not hit Samsung Account signature blocking.
+ * Same smali workaround as [SamsungAppsPatcher wearable-patcher.sh](https://github.com/adil192/SamsungAppsPatcher).
  *
- * Bytecode-only (no resource decode) — Samsung Health is ~300 MB and OOMs Morphe Manager during
- * `Decoding all resources` if this were a resourcePatch.
+ * Scans dex read-only first and only opens mutable classes that contain the target string, so Morphe
+ * Manager does not duplicate every class in memory on this ~300 MB APK.
  */
 @Suppress("unused")
 val bypassSamsungAccountSignatureCheckPatch = bytecodePatch(
     name = "Bypass Samsung Account signature check",
     description = "Replaces com.osp.app.signin with com.notsamsung.dummy in dex (same as PC patcher). " +
-        "Dex-only to avoid OOM on large APKs. Use with the SamsungPatch keystore.",
+        "Use with the SamsungPatch keystore. If on-device patching loops or OOMs, patch on a PC instead.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_SHEALTH)
 
     execute {
         classDefForEach { classDef ->
+            val replacementsByMethod = classDef.methods.mapNotNull { method ->
+                val replacements = method.collectSigninStringReplacements()
+                if (replacements.isEmpty()) null else method to replacements
+            }
+            if (replacementsByMethod.isEmpty()) return@classDefForEach
+
             val mutableClass = mutableClassDefBy(classDef)
-            mutableClass.methods.forEach { mutableMethod ->
-                val implementation = mutableMethod.implementation ?: return@forEach
-
-                implementation.instructions.forEachIndexed { index, instruction ->
-                    if (instruction.opcode != Opcode.CONST_STRING) return@forEachIndexed
-
-                    val referenceInstruction = instruction as ReferenceInstruction
-                    val string = (referenceInstruction.reference as StringReference).string
-                    if (string != SAMSUNG_ACCOUNT_PACKAGE) return@forEachIndexed
-
-                    val register = (instruction as OneRegisterInstruction).registerA
+            replacementsByMethod.forEach { (method, replacements) ->
+                val methodIndex = classDef.methods.indexOf(method)
+                if (methodIndex < 0) return@forEach
+                val mutableMethod = mutableClass.methods.elementAt(methodIndex)
+                replacements.sortedByDescending { it.first }.forEach { (index, register) ->
                     mutableMethod.replaceInstruction(
                         index,
                         "const-string v$register, \"$DUMMY_ACCOUNT_PACKAGE\"",
