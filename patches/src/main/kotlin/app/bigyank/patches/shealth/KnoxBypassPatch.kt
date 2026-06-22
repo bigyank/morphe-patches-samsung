@@ -5,6 +5,28 @@ import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.bigyank.patches.shared.Constants.COMPATIBILITY_SHEALTH
+import com.android.tools.smali.dexlib2.iface.Method
+
+private fun Method.stubReturnBooleanFalse() {
+    implementation?.let { impl ->
+        removeInstructions(0, impl.instructions.count())
+        addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+    }
+}
+
+private fun Method.stubReturnIntZero() {
+    implementation?.let { impl ->
+        removeInstructions(0, impl.instructions.count())
+        addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+    }
+}
+
+private fun Method.stubReturnNullReference() {
+    implementation?.let { impl ->
+        removeInstructions(0, impl.instructions.count())
+        addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
+    }
+}
 
 /**
  * Bypass Samsung Health Knox/root/warranty/SAK integrity checks.
@@ -21,18 +43,9 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_SHEALTH)
 
     execute {
-        KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
-            }
-        }
-        KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            }
-        }
+        KnoxAdapterCheckKnoxCompromisedExternalFingerprint.method.stubReturnNullReference()
+        KnoxAdapterCheckKnoxCompromisedInternalFingerprint.method.stubReturnIntZero()
+
         listOf(
             KnoxAdapterIsKnoxAvailableFingerprint,
             KnoxAdapterIsKnoxAvailableCoreFingerprint,
@@ -42,37 +55,15 @@ val disableKnoxIntegrityChecksPatch = bytecodePatch(
             KnoxControlIsKnoxAvailableFingerprint,
             IKnoxControlProxyIsKnoxAvailableFingerprint,
             SakCheckerIsSupportedFingerprint,
-        ).forEach { fingerprint ->
-            fingerprint.method.apply {
-                implementation?.let { impl ->
-                    removeInstructions(0, impl.instructions.count())
-                    addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-                }
-            }
-        }
-        IcccAdapterCheckKnoxCompromisedFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            }
-        }
-        KnoxControlCheckKnoxCompromisedFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
-            }
-        }
-        KnoxControlCheckWarrantyBitFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            }
-        }
-        SamsungSakCheckerImplFingerprint.method.apply {
-            implementation?.let { impl ->
-                removeInstructions(0, impl.instructions.count())
-                addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            }
+        ).forEach { it.method.stubReturnBooleanFalse() }
+
+        IcccAdapterCheckKnoxCompromisedFingerprint.method.stubReturnIntZero()
+        KnoxControlCheckKnoxCompromisedFingerprint.method.stubReturnNullReference()
+        KnoxControlCheckWarrantyBitFingerprint.method.stubReturnIntZero()
+
+        // Health 6.32 ships multiple SamsungSakChecker impls (e.g. c6r, sl9).
+        SamsungSakCheckerImplFingerprint.matchAllOrNull()?.forEach { match ->
+            match.method.stubReturnBooleanFalse()
         }
     }
 }

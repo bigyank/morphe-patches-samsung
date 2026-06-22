@@ -33,7 +33,7 @@ object KnoxAdapterIsKnoxAvailableFingerprint : Fingerprint(
 object KnoxAdapterIsKnoxAvailableCoreFingerprint : Fingerprint(
     definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
     name = "isKnoxAvailableCore",
-    accessFlags = listOf(AccessFlags.STATIC),
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Z",
     parameters = listOf("Landroid/content/Context;"),
 )
@@ -111,7 +111,7 @@ object SakCheckerIsSupportedFingerprint : Fingerprint(
 )
 
 object SamsungSakCheckerImplFingerprint : Fingerprint(
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    accessFlags = listOf(AccessFlags.PUBLIC),
     returnType = "Z",
     parameters = emptyList(),
     custom = { method, classDef ->
