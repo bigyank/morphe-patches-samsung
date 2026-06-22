@@ -1,0 +1,123 @@
+package app.bigyank.patches.shealth
+
+import app.morphe.patcher.Fingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
+
+// Knox / integrity bypass fingerprints for Samsung Health 6.32.x.
+// Class names are stable Samsung SDK types (not R8-renamed app code).
+
+object KnoxAdapterCheckKnoxCompromisedExternalFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "checkKnoxCompromisedExternal",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Ljava/lang/String;",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterCheckKnoxCompromisedInternalFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "checkKnoxCompromisedInternal",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "I",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterIsKnoxAvailableFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "isKnoxAvailable",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterIsKnoxAvailableCoreFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "isKnoxAvailableCore",
+    accessFlags = listOf(AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterIsAksSakMandatoryFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "isAksSakMandatory",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object KnoxAdapterShouldUseKnoxFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "shouldUseKnox",
+    accessFlags = listOf(AccessFlags.PRIVATE, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Landroid/content/Context;"),
+)
+
+object KnoxAdapterIsSupportedTimaVersionFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/KnoxAdapter;",
+    name = "isSupportedTimaVersion",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object IcccAdapterCheckKnoxCompromisedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/IcccAdapter;",
+    name = "checkKnoxCompromised",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "I",
+    parameters = listOf("Landroid/content/Context;", "Z"),
+)
+
+object KnoxControlIsKnoxAvailableFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/KnoxControl;",
+    name = "isKnoxAvailable",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object KnoxControlCheckKnoxCompromisedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/KnoxControl;",
+    name = "checkKnoxCompromised",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Ljava/lang/String;",
+    parameters = emptyList(),
+)
+
+object KnoxControlCheckWarrantyBitFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/KnoxControl;",
+    name = "checkWarrantyBit",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "I",
+    parameters = listOf("Ljava/lang/String;"),
+)
+
+object IKnoxControlProxyIsKnoxAvailableFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/sdk/healthdata/privileged/IKnoxControl\$Stub\$Proxy;",
+    name = "isKnoxAvailable",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object SakCheckerIsSupportedFingerprint : Fingerprint(
+    definingClass = "Lcom/samsung/android/service/health/security/sak/SakChecker;",
+    name = "isSupported",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = emptyList(),
+)
+
+object SamsungSakCheckerImplFingerprint : Fingerprint(
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = emptyList(),
+    custom = { method, classDef ->
+        method.name == "isSakSupported" &&
+            classDef.interfaces.contains(
+                "Lcom/samsung/android/app/shealth/runtime/contract/SamsungSakChecker;",
+            )
+    },
+)
