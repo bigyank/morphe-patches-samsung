@@ -28,7 +28,7 @@ https://github.com/bigyank/morphe-patches-samsung
 ```
 
 > [!NOTE]
-> Patches are **dex-only** (bytecode). No apktool, PC, or Termux scripts. Morphe rewrites DEX on-device. Samsung Health is ~300 MB; set **Process runtime** to **1280 MB** before patching ([Quick start](#quick-start)).
+> Patches are **dex-only** (bytecode). No apktool, PC, or Termux scripts. Morphe rewrites DEX on-device. Samsung Health is ~300–340 MB; set **Process runtime** to **1280 MB** before patching ([Quick start](#quick-start)).
 
 ---
 
@@ -50,8 +50,8 @@ https://github.com/bigyank/morphe-patches-samsung
 
 **🎯 Supported versions:**
 
-| 6.32.0.001 | 6.31.3.013 |
-| :---: | :---: |
+| 7.00.0.107 | 6.32.0.001 | 6.31.3.013 |
+| :---: | :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -62,7 +62,7 @@ https://github.com/bigyank/morphe-patches-samsung
 
 <!-- PATCHES_END -->
 
-Both patches default **on**. Target a [supported Health version](#patches); latest is **6.32.0.001**.
+Both patches default **on**. Target a [supported Health version](#patches); latest is **7.00.0.107** (also 6.32.0.001).
 
 ---
 

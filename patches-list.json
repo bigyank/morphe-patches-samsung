@@ -17,6 +17,12 @@
           "signatures": null,
           "targets": [
             {
+              "version": "7.00.0.107",
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "6.32.0.001",
               "isExperimental": false,
               "minSdk": null,
@@ -47,6 +53,12 @@
           "appIconColor": "#1DC9A0",
           "signatures": null,
           "targets": [
+            {
+              "version": "7.00.0.107",
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "6.32.0.001",
               "isExperimental": false,
