@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/bigyank/morphe-patches-samsung/compare/v1.1.0...v1.2.0) (2026-06-30)
+
+### ✨ New Features
+
+* add Samsung Health 7.00.0.107 Knox and account patch support ([25aad69](https://github.com/bigyank/morphe-patches-samsung/commit/25aad69406430a8585bdaaa77327366a7f3ed478))
+
 ## [1.1.0](https://github.com/bigyank/morphe-patches-samsung/compare/v1.0.16...v1.1.0) (2026-06-22)
 
 ### ✨ New Features
