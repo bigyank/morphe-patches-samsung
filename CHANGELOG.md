@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.2.0...v1.2.1) (2026-06-30)
+
+### 🐛 Bug Fixes
+
+* **Samsung Health:** skip empty c6r fingerprint on Health 7.x ([036254a](https://github.com/bigyank/morphe-patches-samsung/commit/036254a6ad640248db59b7e07c038c1e5fb7046a))
+
 ## [1.2.0](https://github.com/bigyank/morphe-patches-samsung/compare/v1.1.0...v1.2.0) (2026-06-30)
 
 ### ✨ New Features
