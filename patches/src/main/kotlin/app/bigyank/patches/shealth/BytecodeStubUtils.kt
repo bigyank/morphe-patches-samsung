@@ -25,6 +25,10 @@ internal fun BytecodePatchContext.replaceMethodBodyIfPresent(fingerprint: Finger
     runCatching { replaceMethodBody(fingerprint, stubBody) }
 }
 
+internal fun BytecodePatchContext.stubZeroReturnIfPresent(fingerprint: Fingerprint, returnObject: Boolean) {
+    runCatching { stubZeroReturn(fingerprint, returnObject) }
+}
+
 internal fun BytecodePatchContext.stubReturnVoid(fingerprint: Fingerprint) {
     replaceMethodBody(fingerprint, "return-void")
 }

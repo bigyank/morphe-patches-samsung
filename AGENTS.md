@@ -38,6 +38,7 @@ Patch Samsung Health **on-device** via [Morphe Manager](https://morphe.software/
 | Morphe OOM / patch loop on device | `resourcePatch` decodes ~300 MB Health resources | **Dex-only** account patch; never re-add manifest/res decode (v1.0.10 was broken) |
 | CI compile failures after refactor | Morphe 1.3 needs `BytecodePatchContext` for `fingerprint.method` and smali `addInstructions` | Extension functions on `BytecodePatchContext`, logic inside `fingerprint.method.apply { }` (v1.0.12) |
 | OOBE fingerprint mismatch on 6.32 | Hardcoded `util/h.p` obfuscated per build | Content-scanned `OobeKnoxStubber.kt` (v1.0.15) |
+| Health 7.x SAK fingerprint | Empty `c6r` class — hard fingerprint fails | Optional `c6r` fingerprint + `SakSupportedStubber.kt` dex scan |
 | Health 7.x account API refactor | `getSamsungAccountId(Context)` removed; provider gate takes `Context` | `isAccountProviderSupported(Context)` fingerprint + `AccountProviderStubber.kt` scans `SamsungAccountDataSourceImpl` |
 | CI compile fail on `$this$isRooted` string | Kotlin string interpolation in `isRootedFileCheck` | Escape dollars: `${'$'}this${'$'}isRooted` (v1.0.16) |
 
