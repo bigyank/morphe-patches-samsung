@@ -11,6 +11,8 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x1DC9A0,
         targets = listOf(
+            // 2026-09 stable; Knox 0x1 device-verified via v1.3.0-dev.1
+            AppTarget(version = "7.00.6.011"),
             // Major redesign (APKMirror, Jun 2026)
             AppTarget(version = "7.00.0.107"),
             // Previous 6.3x stable
