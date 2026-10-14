@@ -88,7 +88,17 @@ morphe-patches-samsung/
 │       ├── Fingerprints.kt          # All method fingerprints (Knox + account)
 │       ├── BytecodeStubUtils.kt     # stubReturnFalse, stubZeroReturn, replaceMethodBody
 │       ├── OobeKnoxStubber.kt       # content-scanned OOBE Knox/root gate stubs
+│       ├── SakSupportedStubber.kt   # content-scanned obfuscated isSakSupported stubs
+│       ├── AccountProviderStubber.kt# content-scanned 7.x account fetch rewrite
+│       ├── AccountManagerLookup.kt  # smali bodies for AccountManager redirects
 │       └── SigninPackageReplacer.kt # replaceSigninPackageInDex()
+├── scripts/
+│   ├── version-loop.sh              # single-loop version bump entrypoint (--patch adds desktop verify, --rea adds REA drift evidence)
+│   ├── preflight_fingerprints.py    # fingerprint + heuristic pre-flight vs an APK
+│   ├── verify_patched.py            # asserts stubs landed in a patched APK's dex
+│   ├── rea.sh                       # REA wrapper; auto-downloads the jadx-headless-mcp engine
+│   └── rea_drift.py                 # decompiles every drifted fingerprint → rea-drift-<version>.md
+├── .agents/skills/shealth-version-bump/SKILL.md  # full loop runbook for agents
 ├── patches/build.gradle.kts         # Morphe bundle metadata; -Xcontext-receivers
 ├── patches-list.json                # Auto-updated by release CI — do not hand-edit
 ├── .github/workflows/release.yml    # build + semantic-release
@@ -210,16 +220,24 @@ CI runs the same Gradle command on push to `main`, then semantic-release publish
 
 ---
 
-## Extending to a new Health version
+## Extending to a new Health version (single loop)
 
-1. Download APK; decompile or inspect dex.
-2. Confirm all classes/methods in `Fingerprints.kt` still exist with same signatures.
-3. Add `AppTarget(version = "x.y.z")` in `Constants.kt`.
-4. Test on Knox 0x1 device — launch, login, sync.
-5. PR with device model + Knox status + results.
-6. Use conventional commit; release is automatic.
+The whole flow is one loop, codified in `.agents/skills/shealth-version-bump/SKILL.md`:
 
-If new Health version adds obfuscated Knox gates, extend **`OobeKnoxStubber.kt` heuristics** or add fingerprints for stable SDK methods. Do not hardcode obfuscated class names.
+```bash
+scripts/version-loop.sh <version>           # download → pre-flight → report (exit 0 = green)
+scripts/version-loop.sh <version> --rea     # + REA decompiles every drifted fingerprint
+scripts/version-loop.sh <version> --patch   # + desktop patch via morphe-desktop CLI + stub verify
+```
+
+1. **Discover** the latest stable via web fetch of APKMirror (curl is Cloudflare-blocked; the newest upload may be a beta — target the newest **stable**).
+2. **Run the loop** — downloads the APK via `apkeep` (APKPure) into `.cache/apks/`, then `preflight_fingerprints.py` verifies all fingerprints + scan heuristics against the dex without running Morphe. JSON report: `.cache/apks/preflight-<version>.json`.
+3. **Interpret** — hard failures are non-optional fingerprint drift or `account_provider_fetch` with zero hits. Everything else (missing `c6r`, missing `getSamsungAccountId`, OOBE scans at 0 hits on 7.x) is expected; see the skill's interpretation table.
+4. **Fix drift** — start with `--rea` (writes `.cache/apks/rea-drift-<version>.md`: expected def, actual class inventory, decompiled Java). Fall back to androguard snippets (skill §3a) or jadx + `jadx-ai-mcp` / `jadx-morphe` plugins for live xref/smali inspection. Extend `*Stubber.kt` heuristics for new obfuscated gates — never hardcode obfuscated names.
+5. **Add `AppTarget(version = "x.y.z")`** in `Constants.kt`.
+6. **Build** (`./gradlew :patches:buildAndroid generatePatchesList clean`), **device-test on Knox 0x1** (launch, login, sync), then PR with device model + Knox status + results.
+
+No device verification → do not claim support in docs.
 
 ---
 
@@ -257,15 +275,29 @@ export GITHUB_TOKEN="$(gh auth token)"
 # Check latest release
 gh release view --repo bigyank/morphe-patches-samsung
 
+# Single-loop version bump (download + pre-flight + report)
+scripts/version-loop.sh 7.00.6.011
+
+# REA-assisted decompilation (drift evidence or one-off inspection)
+scripts/version-loop.sh 7.00.6.011 --rea        # markdown drift report after pre-flight
+scripts/rea.sh inspect-android-method \
+  .cache/apks/com.sec.android.app.shealth@7.00.6.011.apk \
+  com.samsung.android.sdk.healthdata.privileged.samsungaccount.SamsungAccountUtils getSamsungAccountId
+
 # Watch CI
 gh run list --repo bigyank/morphe-patches-samsung --limit 3
 ```
 
 ---
 
-## Current status (as of v1.1.0)
+## Current status (as of v1.3.0)
 
 - **CI:** green (`./gradlew :patches:buildAndroid generatePatchesList clean`)
-- **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1
-- **Stable targets:** Samsung Health 7.00.0.107 / 6.32.0.001 / 6.31.3.013 with both default-on patches
+- **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1; 7.00.6.011 device-verified via v1.3.0-dev.1
+- **Stable targets:** Samsung Health 7.00.6.011 / 7.00.0.107 / 6.32.0.001 / 6.31.3.013 with both default-on patches
+- **Version loop:** `scripts/version-loop.sh` validated end-to-end on desktop — pre-flight PASS on 7.00.0.107 (baseline), 7.00.6.011, and 6.32.0.001; stage 4 (`--patch`) proven with both the released and locally built bundles (18/18 stubs, account redirect, signin replace). Stage 4 is version-gated: the patcher no-ops on versions missing from `Constants.kt` AppTargets — the script detects this and instructs to add the AppTarget + rebuild first
+- **REA integration:** `rea-agents` CLI 6.5.0 + jadx-headless-mcp 0.7.1 engine (auto-downloaded to `.cache/tools/` by `scripts/rea.sh`). `version-loop.sh --rea` decompiles every drifted fingerprint into `.cache/apks/rea-drift-<version>.md`; validated on 6.32.0.001 (version-expected fingerprint drift explained with decompiled Java, `AccountCountryLookup` correctly reported absent). REA adb commands (`install-adb-package --replace`, `collect-adb-bugreport`) documented in the skill for device sessions — untested, no device attached yet
+- **Known variant note:** APKPure universal 6.32.0.001 lacks the OOBE gate shapes the APKMirror build has (pre-flight reports them as drift intel: `HomeAppCloseActivity->onCreate`, `gdc->k`); SDK fingerprint stubs still cover Knox
+- **Build auth:** `gh` token carries `read:packages` (device-flow refresh); export both `GITHUB_ACTOR` and `GITHUB_TOKEN` for Gradle — username is required for the GitHub Packages Basic auth pair
+- **Open issues triaged:** #7 Watch4 sync = gate lives in Galaxy Wearable + watch-side signature trust (outside Health dex, documented gap in AUDIT.md); #6 ad panel = feasible dex-only patch (`PromotionDiscoverCardViewModel.j` in `home/promotion/discoverplus/`), not yet implemented; #2/#10 = new-app scope (Health Monitor / Gallery), framework is reusable
 - **Open work:** separate Wearable Morphe repo if expanding scope — see [AUDIT.md](./AUDIT.md)
