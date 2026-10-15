@@ -1,3 +1,9 @@
+## [1.4.0-dev.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.3.0...v1.4.0-dev.1) (2026-10-15)
+
+### ✨ New Features
+
+* add hide-home-promotion-panel patch (issue [#6](https://github.com/bigyank/morphe-patches-samsung/issues/6)) ([5fa506b](https://github.com/bigyank/morphe-patches-samsung/commit/5fa506bd8c1522b1e0efbfd9efa986f619689519))
+
 ## [1.3.0-dev.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-10-14)
 
 ### 🐛 Bug Fixes

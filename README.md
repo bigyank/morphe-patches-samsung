@@ -43,9 +43,9 @@ https://github.com/bigyank/morphe-patches-samsung
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.0-dev.2](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.3.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.4.0-dev.1](https://github.com/bigyank/morphe-patches-samsung/releases/tag/v1.4.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;3 patches total
 <details open>
-<summary>📦 Samsung Health&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<summary>📦 Samsung Health&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -57,6 +57,7 @@ https://github.com/bigyank/morphe-patches-samsung
 |----------|----------------|-----------|
 | [Bypass Samsung Account provider checks](#bypass-samsung-account-provider-checks) | Replaces com.osp.app.signin with com.notsamsung.dummy in dex and routes account lookups through Android AccountManager instead of Samsung Account's provider. |  |
 | [Disable Knox integrity checks](#disable-knox-integrity-checks) | Bypass Knox, root, warranty bit, and SAK checks so Samsung Health runs on Knox-tripped devices (0x1) without root. |  |
+| [Hide home promotion panel](#hide-home-promotion-panel) | Removes the Discover+ advertising card from the home screen by replicating the app's own offline early-exit in the promotion load path. No-ops on builds without the promotion package. |  |
 
 </details>
 
