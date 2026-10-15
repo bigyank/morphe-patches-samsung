@@ -119,7 +119,14 @@ Global sed (every patched APK): `Build.MANUFACTURER`/`BRAND` → dummy string; `
 | Item | Original source | When to add |
 |------|-----------------|-------------|
 | **`$this$isRooted` dex stub** | `apply_shealth_knox_bypass.py` | ✅ v1.0.16+ — static `(File)Z` methods containing `$this$isRooted` |
+| **Hide home promotion (ad) panel** | Community request (#6) | ✅ v1.4.0 — `PromotionPanelStubber.kt` replicates the app's offline early-exit in `PromotionDiscoverCardViewModel`'s load coroutine (content-scanned on the stable `SHEALTH#PromotionDiscoverCardViewModel` log tag; 6.32 `j` / 7.00.6 `q`) |
 | **New Health version** | — | Add `AppTarget` + verify fingerprints when Samsung ships 6.33+ |
+
+Mining sweep (2026-10, 7.00.6.011 + 6.32.0.001 dex): every Knox-gate caller
+routes through the SDK methods already stubbed (no uncovered gates); the only
+other candidate found was the Together social region gate (`scc`/`FriendInvitationDeepLinkActivity`),
+not implemented — region locks for payment/share features stay out of scope.
+Issue #2 (Health Monitor) and #10 (Gallery) remain Tier 3 new-app scope.
 
 Implementation sketch for root scan: find static `(Ljava/io/File;)Z` methods containing const-string `$this$isRooted`, stub return false — same pattern as `OobeKnoxStubber.kt`.
 

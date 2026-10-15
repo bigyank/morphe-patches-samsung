@@ -23,10 +23,11 @@ Handoff doc for agents continuing work on **Samsung Health Morphe patches**. Rea
 
 Patch Samsung Health **on-device** via [Morphe Manager](https://morphe.software/) so it runs on Knox-tripped phones without root — comparable login/sync behavior to a fully patched APK workflow.
 
-### Two patches (both default-on)
+### Patches (all default-on)
 
 1. **Disable Knox integrity checks** — stubs 17 Knox/SAK/warranty SDK methods plus content-scanned OOBE gates (`OobeKnoxStubber.kt`).
 2. **Bypass Samsung Account provider checks** — dex string replace + provider stubs so login does not hit Samsung Account’s signature-checked `AccountManagerProvider`.
+3. **Hide home promotion panel** (v1.4.0+) — content-scanned stub of the Discover+ ad card load path (`PromotionPanelStubber.kt`); no-ops on builds without the promotion package.
 
 ### Root-cause journey (read this to avoid repeating mistakes)
 
@@ -85,10 +86,12 @@ morphe-patches-samsung/
 │   └── shealth/
 │       ├── KnoxBypassPatch.kt       # val disableKnoxIntegrityChecksPatch
 │       ├── AccountBypassPatch.kt    # val bypassSamsungAccountSignatureCheckPatch
+│       ├── PromotionPatch.kt        # val hideHomePromotionPanelPatch (Discover+ ad card)
 │       ├── Fingerprints.kt          # All method fingerprints (Knox + account)
 │       ├── BytecodeStubUtils.kt     # stubReturnFalse, stubZeroReturn, replaceMethodBody
 │       ├── OobeKnoxStubber.kt       # content-scanned OOBE Knox/root gate stubs
 │       ├── SakSupportedStubber.kt   # content-scanned obfuscated isSakSupported stubs
+│       ├── PromotionPanelStubber.kt # content-scanned Discover+ ad card display-path stub
 │       ├── AccountProviderStubber.kt# content-scanned 7.x account fetch rewrite
 │       ├── AccountManagerLookup.kt  # smali bodies for AccountManager redirects
 │       └── SigninPackageReplacer.kt # replaceSigninPackageInDex()
@@ -114,6 +117,7 @@ Morphe identifies patches by Kotlin `val` names:
 
 - `disableKnoxIntegrityChecksPatch`
 - `bypassSamsungAccountSignatureCheckPatch` ← name is historical; UI title is “Bypass Samsung Account provider checks”
+- `hideHomePromotionPanelPatch` (v1.4.0+, default-on; no-ops on builds without the promotion package)
 
 ---
 
@@ -245,7 +249,7 @@ No device verification → do not claim support in docs.
 
 1. **Never re-add `resourcePatch`** for account manifest/res sed — OOM on ~300 MB APK on-device.
 2. **Keep account patch dex-only** — string replace + provider stubs only.
-3. **Keep both patches default-on** unless there is a proven reason not to.
+3. **Keep all patches default-on** unless there is a proven reason not to.
 4. **Do not rename** `bypassSamsungAccountSignatureCheckPatch` / `disableKnoxIntegrityChecksPatch` vals.
 5. **Bytecode helpers** must be `BytecodePatchContext` extensions with work inside `fingerprint.method.apply { }`.
 6. **Default Morphe keystore is sufficient** — do not require custom JKS in docs or patch metadata.
@@ -294,7 +298,7 @@ gh run list --repo bigyank/morphe-patches-samsung --limit 3
 
 - **CI:** green (`./gradlew :patches:buildAndroid generatePatchesList clean`)
 - **Device:** launch, account sync, Galaxy Fit3 wearable sync confirmed on SM-S911B, Knox 0x1; 7.00.6.011 device-verified via v1.3.0-dev.1
-- **Stable targets:** Samsung Health 7.00.6.011 / 7.00.0.107 / 6.32.0.001 / 6.31.3.013 with both default-on patches
+- **Stable targets:** Samsung Health 7.00.6.011 / 7.00.0.107 / 6.32.0.001 / 6.31.3.013 with all default-on patches
 - **Version loop:** `scripts/version-loop.sh` validated end-to-end on desktop — pre-flight PASS on 7.00.0.107 (baseline), 7.00.6.011, and 6.32.0.001; stage 4 (`--patch`) proven with both the released and locally built bundles (18/18 stubs, account redirect, signin replace). Stage 4 is version-gated: the patcher no-ops on versions missing from `Constants.kt` AppTargets — the script detects this and instructs to add the AppTarget + rebuild first
 - **REA integration:** `rea-agents` CLI 6.5.0 + jadx-headless-mcp 0.7.1 engine (auto-downloaded to `.cache/tools/` by `scripts/rea.sh`). `version-loop.sh --rea` decompiles every drifted fingerprint into `.cache/apks/rea-drift-<version>.md`; validated on 6.32.0.001 (version-expected fingerprint drift explained with decompiled Java, `AccountCountryLookup` correctly reported absent). REA adb commands (`install-adb-package --replace`, `collect-adb-bugreport`) documented in the skill for device sessions — untested, no device attached yet
 - **Known variant note:** APKPure universal 6.32.0.001 lacks the OOBE gate shapes the APKMirror build has (pre-flight reports them as drift intel: `HomeAppCloseActivity->onCreate`, `gdc->k`); SDK fingerprint stubs still cover Knox

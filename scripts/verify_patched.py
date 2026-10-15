@@ -80,6 +80,43 @@ def const_string_hits(index: dict, needle: str) -> int:
     return hits
 
 
+def promotion_check(patched_index: dict) -> tuple[str, str]:
+    """hideHomePromotionPanelPatch: the promotion ViewModel's display path must
+    be a 2-instruction sget-object/return-object stub (the log tag it carried
+    is wiped with the body). Absent package = build without ads, OK."""
+    tag = "SHEALTH#PromotionDiscoverCardViewModel"
+    vm_classes = {
+        cls: methods
+        for cls, methods in patched_index.items()
+        if "promotion/discoverplus" in cls and "PromotionDiscoverCardViewModel" in cls
+    }
+    if not vm_classes:
+        return "OK", "promotion package absent (patch no-ops)"
+    tag_survivors, stubs = [], []
+    for cls, methods in vm_classes.items():
+        for m in methods:
+            if m.method_ref is None:
+                continue
+            ins = list(m.method_ref.get_instructions())
+            names = [i.get_name() for i in ins]
+            if any(
+                n in ("const-string", "const-string/jumbo") and tag in (i.get_output() or "")
+                for n, i in zip(names, ins)
+            ):
+                tag_survivors.append(f"{cls}->{m.name}")
+            params, ret = parse_descriptor(m.descriptor)
+            if (
+                ret == "Ljava/lang/Object;" and len(params) == 2 and m.access_flags & 0x8
+                and len(ins) == 2 and names[0] == "sget-object" and names[1] == "return-object"
+            ):
+                stubs.append(f"{cls}->{m.name}")
+    if stubs:
+        return "OK", f"stubbed: {stubs[0]}"
+    if tag_survivors:
+        return "FAIL", f"display path still live: {tag_survivors[0]}"
+    return "FAIL", "ViewModel present but no display-path stub found"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--original", required=True, type=Path)
@@ -166,6 +203,13 @@ def main() -> int:
     if dummy_patched == 0:
         hard_fail.append("signin_package_replace")
 
+    # 4. Promotion (ad) display path — hideHomePromotionPanelPatch.
+    promo_status, promo_detail = promotion_check(patched_index)
+    print(f"Promotion display path: {promo_status} — {promo_detail}")
+    if promo_status == "FAIL":
+        hard_fail.append("promotion_display_stub")
+    results.append({"check": "promotion_display_path", "status": promo_status, "detail": promo_detail})
+
     report = {
         "original": str(args.original),
         "patched": str(args.patched),
@@ -173,6 +217,7 @@ def main() -> int:
         "account_fetch_rewrite": fetch_ok,
         "signin_const_strings_patched": signin_patched,
         "dummy_const_strings_patched": dummy_patched,
+        "promotion_display_path": {"status": promo_status, "detail": promo_detail},
         "hard_failures": hard_fail,
     }
     if args.json_out:
@@ -183,7 +228,7 @@ def main() -> int:
     if hard_fail:
         print(f"RESULT: FAIL — {', '.join(hard_fail)}")
         return 1
-    print("RESULT: PASS — Knox stubs, account-fetch rewrite, and signin replacement all landed")
+    print("RESULT: PASS — Knox stubs, account-fetch rewrite, signin replacement, and promotion stub all landed")
     return 0
 
 

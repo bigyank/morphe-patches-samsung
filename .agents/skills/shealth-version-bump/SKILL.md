@@ -45,6 +45,7 @@ Pre-flight verifies, **without running Morphe**:
 | Knox popup launcher / root checks / ViewModel gates / `$this$isRooted` | `OobeKnoxStubber.kt` heuristics |
 | Obfuscated `isSakSupported` classes (`c6r`, `dc`, `qsv`, …) | `SakSupportedStubber.kt` heuristic |
 | `SamsungAccountDataSourceImpl.invokeSuspend` provider fetch | `AccountProviderStubber.kt` heuristic |
+| Discover+ promotion display path (`SHEALTH#PromotionDiscoverCardViewModel` tag) | `PromotionPanelStubber.kt` heuristic |
 | `com.osp.app.signin` dex string presence | `SigninPackageReplacer.kt` scope |
 
 ### 3. Interpret the report
@@ -67,6 +68,7 @@ stubbers no-op on zero matches — so the report has two classes:
 | `SamsungAccountUtilsGetSamsungAccountIdFingerprint` missing | 7.x removed it; `stubAccountProviderFetchCalls()` is the 7.x path |
 | `SamsungAccountUtilsIsAccountProviderSupportedFingerprint` (no-arg) mismatched | 6.3x variant; 7.x uses the `Context` variant |
 | OOBE scans (`oobe_knox_popup_launcher`, `home_app_close_root_check`, `knox_handler_viewmodel_*`, `rooted_file_check`) at 0 hits | OOBE restructured after 6.32; zero hits verified fine on 7.00.0.107 |
+| `promotion_display_path` at 0 hits | Build ships no Discover+ ad package — `hideHomePromotionPanelPatch` no-ops by design |
 | `obfuscated_sak_checker` class names differ between builds | Renamed per build (`qsv` → `gtv` between 7.00.0.107 and 7.00.6.011) — that is why the scan exists |
 
 #### 3a. Inspecting drift (modern decompilation flow)
@@ -139,7 +141,7 @@ loaded APK directly in the GUI/CLI before editing `Fingerprints.kt`.
 
 1. Resolves a `.mpp` bundle: `patches/build/libs/patches-*.mpp` if built, else the latest GitHub release artifact. To build the *current* tree you need `read:packages` on the gh token (`gh auth refresh -h github.com -s read:packages`) for the Morphe Maven registry, then `./gradlew :patches:buildAndroid generatePatchesList`.
 2. Patches the APK headless with morphe-desktop (jar auto-downloaded to `.cache/tools/`, Java 21 via `/opt/homebrew/opt/openjdk@21` if present): `java -jar morphe-desktop-*-all.jar patch -p bundle.mpp app.apk`.
-3. `scripts/verify_patched.py` re-indexes the patched dex and asserts: every hard fingerprint method is now a stub body, the AccountManager redirect landed (6.x `getSamsungAccountId` or 7.x `fetchAccountId$2`), and no const-string still references `com.osp.app.signin`. Report: `.cache/apks/verify-<version>.json`.
+3. `scripts/verify_patched.py` re-indexes the patched dex and asserts: every hard fingerprint method is now a stub body, the AccountManager redirect landed (6.x `getSamsungAccountId` or 7.x `fetchAccountId$2`), no const-string still references `com.osp.app.signin`, and the promotion display path is stubbed (or the package is absent). Report: `.cache/apks/verify-<version>.json`.
 
 A stage-4 PASS means the dex-level patch is proven; the device test (step 6)
 then only validates runtime behavior.

@@ -382,6 +382,22 @@ def run_heuristics(index: dict, dex_buffers: list[bytes]) -> list[dict]:
     # 6.x builds have their own getSamsungAccountId redirect — not required there.
     hits("account_provider_fetch", len(found), found, required=not six_x_redirect)
 
+    # PromotionPanelStubber.kt — Discover+ ad card display path
+    # (stable log tag; names/continuation/Unit are obfuscated per build)
+    found = []
+    for cls, methods in index.items():
+        if "promotion/discoverplus" not in cls:
+            continue
+        for m in methods:
+            if m.method_ref is None or not m.access_flags & 0x8:
+                continue
+            params, ret = parse_descriptor(m.descriptor)
+            if len(params) != 2 or ret != "Ljava/lang/Object;":
+                continue
+            if any("SHEALTH#PromotionDiscoverCardViewModel" in s for s in method_strings(m)):
+                found.append(f"{cls}->{m.name}")
+    hits("promotion_display_path", len(found), found)
+
     # SigninPackageReplacer.kt — raw occurrence count of the account package
     total = sum(buf.count(b"com.osp.app.signin") for buf in dex_buffers)
     results.append(
