@@ -19,22 +19,37 @@ discover → scripts/version-loop.sh <version> → interpret report →
 
 ### 1. Discover the latest stable (agent/web step)
 
-APKMirror and APKPure block curl (Cloudflare) — use the session's web tools:
+The **version-watch workflow** (`.github/workflows/version-watch.yml`) polls
+APKPure daily and auto-opens an `app-update` issue when a release not in
+`Constants.kt` appears — start from that issue if it exists. Manually:
 
-- Fetch `https://www.apkmirror.com/apk/samsung-electronics-co-ltd/s-health/` (force no-cache).
-- Latest upload may be a **beta** (e.g. 7.1.x). The bump targets the newest
-  **stable** release. Compare against `Constants.kt` targets and `.cache/apks/`.
-- APKMirror lists Health with variant `arm64-v8a + armeabi-v7a (Android 10+)`.
+- `apkeep -a com.sec.android.app.shealth -l -d apk-pure /tmp` lists every
+  APKPure version (newest last). APKMirror/APKPure block curl for pages
+  (Cloudflare); the `apkeep -l` list is the reliable machine path.
+- The newest upload may be a **beta**. The bump targets the newest
+  **stable** release — cross-check the APKMirror listing via web tools.
+- Compare against `Constants.kt` targets and `.cache/apks/`.
 
 ### 2. Run the mechanical loop (single command)
 
 ```bash
 scripts/version-loop.sh <version>   # e.g. 7.00.6.011
+scripts/version-loop.sh <version> --diff 7.00.6.011   # + dex diff vs a cached baseline
 ```
 
 Stages: resolve/download APK via `apkeep` (APKPure source, cached under
-`.cache/apks/`) → pre-flight (`scripts/preflight_fingerprints.py`) → JSON report
+`.cache/apks/`) → optional dex diff vs a cached baseline (`--diff`, stage 1a:
+target-set delta report at `.cache/apks/dex-diff-*.md` with REA follow-up
+commands) → pre-flight (`scripts/preflight_fingerprints.py`) → JSON report
 at `.cache/apks/preflight-<version>.json`.
+
+**Drift policy:** when a fingerprint drifts on a new version, prefer
+migrating that target to a content-scanned stubber over re-pinning the exact
+signature. ReVanced Patcher v22 replaced its whole fingerprint system with a
+composable matching API for exactly this reason — exact class/name/flag
+signatures are the component that breaks on app updates; content anchors
+(strings, shapes) survive obfuscation churn. Exact fingerprints stay
+appropriate only for stable SDK methods (`KnoxAdapter` and friends).
 
 Pre-flight verifies, **without running Morphe**:
 
@@ -143,8 +158,10 @@ loaded APK directly in the GUI/CLI before editing `Fingerprints.kt`.
 2. Patches the APK headless with morphe-desktop (jar auto-downloaded to `.cache/tools/`, Java 21 via `/opt/homebrew/opt/openjdk@21` if present): `java -jar morphe-desktop-*-all.jar patch -p bundle.mpp app.apk`.
 3. `scripts/verify_patched.py` re-indexes the patched dex and asserts: every hard fingerprint method is now a stub body, the AccountManager redirect landed (6.x `getSamsungAccountId` or 7.x `fetchAccountId$2`), no const-string still references `com.osp.app.signin`, and the promotion display path is stubbed (or the package is absent). Report: `.cache/apks/verify-<version>.json`.
 
-A stage-4 PASS means the dex-level patch is proven; the device test (step 6)
-then only validates runtime behavior.
+A stage-4 PASS means the dex-level patch is proven; the emulator smoke test
+(workflow `smoke-test.yml`, manual dispatch) additionally proves the patched
+APK launches without crashing — run it before a device flash when touching
+stubber code. The device test (step 6) remains the only runtime-behavior gate.
 
 ### 4. Add the target
 

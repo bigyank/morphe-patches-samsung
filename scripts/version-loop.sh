@@ -2,16 +2,18 @@
 # Single-loop Samsung Health version bump: download → pre-flight → drift report → optional desktop patch + verify.
 #
 # Usage:
-#   scripts/version-loop.sh <version>         # e.g. 7.00.6.011; download + pre-flight only
-#   scripts/version-loop.sh <version> --patch # also build/patch/verify on desktop (stage 4)
-#   scripts/version-loop.sh <version> --rea   # also decompile drifted fingerprints via REA
-#   scripts/version-loop.sh latest            # apkeep unpinned (may grab a beta — prefer explicit)
+#   scripts/version-loop.sh <version>                     # e.g. 7.00.6.011; download + pre-flight only
+#   scripts/version-loop.sh <version> --patch             # also build/patch/verify on desktop (stage 4)
+#   scripts/version-loop.sh <version> --rea               # also decompile drifted fingerprints via REA
+#   scripts/version-loop.sh <version> --diff <baseline>   # also dex-diff vs a cached baseline (stage 1a)
+#   scripts/version-loop.sh latest                        # apkeep unpinned (may grab a beta — prefer explicit)
 #
 # Version discovery (which build is latest stable) is an agent/web step — see
 # .agents/skills/shealth-version-bump/SKILL.md. Everything mechanical runs here.
 #
 # Stages:
 #   [1/3] resolve APK   — .cache/apks cache or apkeep (APKPure source)
+#   [1a]  --diff <ver>  — dex diff vs cached baseline APK (target-set delta → .cache/apks/dex-diff-*.md)
 #   [2/3] pre-flight    — fingerprint + heuristic verification (preflight_fingerprints.py)
 #   [3/3] report        — exit 0 = green for Fingerprints.kt unchanged; exit 1 = drift
 #   [2a]  --rea         — decompile every drifted fingerprint via REA + jadx-headless-mcp
@@ -26,20 +28,26 @@ TOOLS_DIR="${REPO_ROOT}/.cache/tools"
 VERSION=""
 DO_PATCH=false
 DO_REA=false
+DIFF_BASELINE=""
+prev=""
 for arg in "$@"; do
   case "$arg" in
     --patch) DO_PATCH=true ;;
     --rea) DO_REA=true ;;
+    --diff) : ;;
     *)
-      if [[ -z "$VERSION" ]]; then VERSION="$arg"; else
-        echo "usage: scripts/version-loop.sh <version|latest> [--patch] [--rea]" >&2; exit 2
+      if [[ "$prev" == "--diff" ]]; then DIFF_BASELINE="$arg"
+      elif [[ -z "$VERSION" ]]; then VERSION="$arg"
+      else
+        echo "usage: scripts/version-loop.sh <version|latest> [--patch] [--rea] [--diff <baseline>]" >&2; exit 2
       fi ;;
   esac
+  prev="$arg"
 done
 
 if [[ -z "$VERSION" ]]; then
-  echo "usage: scripts/version-loop.sh <version|latest> [--patch] [--rea]"
-  echo "  Discover the latest stable version first (APKMirror listing via web fetch)."
+  echo "usage: scripts/version-loop.sh <version|latest> [--patch] [--rea] [--diff <baseline>]"
+  echo "  Discover the latest stable version first (apkeep -a com.sec.android.app.shealth -l -d apk-pure)."
   exit 2
 fi
 
@@ -61,6 +69,19 @@ else
   fi
 fi
 [[ -f "$APK" ]] || { echo "│ FATAL: APK missing after download: $APK"; exit 1; }
+
+if [[ -n "$DIFF_BASELINE" ]]; then
+  BASELINE_APK="${APK_DIR}/com.sec.android.app.shealth@${DIFF_BASELINE}.apk"
+  if [[ ! -f "$BASELINE_APK" ]]; then
+    echo "│ FATAL: baseline APK not cached: $BASELINE_APK"
+    echo "│        download it first: apkeep -a com.sec.android.app.shealth@${DIFF_BASELINE} -d apk-pure $APK_DIR"
+    exit 1
+  fi
+  echo "├─ [1a] dex diff vs baseline ${DIFF_BASELINE}"
+  python3 "${REPO_ROOT}/scripts/dex_diff.py" \
+    --old "$BASELINE_APK" --new "$APK" \
+    || echo "│ (dex diff failed — continuing with pre-flight)"
+fi
 
 echo "├─ [2/3] pre-flight fingerprints + heuristics"
 python3 "${REPO_ROOT}/scripts/preflight_fingerprints.py" \

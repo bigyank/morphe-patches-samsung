@@ -1,0 +1,85 @@
+name: Version watch
+
+# Daily APKPure poll for a new stable Samsung Health release. When one shows
+# up that Constants.kt does not list, open a tracking issue with the bump
+# runbook. Issues labelled `app-update` are the state store — they are closed
+# automatically once the version ships in AppTargets.
+#
+# Caveats (GitHub scheduled-workflow behavior):
+#   - cron runs only on the default branch and may be delayed under load
+#   - APKPure lists may include betas — the issue asks to verify stability
+#     against APKMirror before bumping
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+env:
+  PACKAGE: com.sec.android.app.shealth
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install apkeep
+        run: |
+          URL="$(curl -sL https://api.github.com/repos/EFForg/apkeep/releases/latest \
+            | jq -r '.assets[] | select(.name == "apkeep-x86_64-unknown-linux-gnu") | .browser_download_url')"
+          sudo curl -sL -o /usr/local/bin/apkeep "$URL"
+          sudo chmod +x /usr/local/bin/apkeep
+          apkeep --help >/dev/null
+
+      - name: Resolve newest APKPure version
+        id: versions
+        run: |
+          apkeep -a "$PACKAGE" -l -d apk-pure /tmp > versions.txt
+          cat versions.txt
+          NEWEST="$(grep -oE '[0-9]+(\.[0-9]+){3}' versions.txt \
+            | python3 -c 'import sys; print(max(sys.stdin.read().split(), key=lambda v: tuple(map(int, v.split(".")))))')"
+          SUPPORTED="$(grep -oE 'version = "[0-9.]+"' patches/src/main/kotlin/app/bigyank/patches/shared/Constants.kt \
+            | grep -oE '[0-9]+(\.[0-9]+){3}' || true)"
+          echo "newest=$NEWEST" >> "$GITHUB_OUTPUT"
+          if grep -qx "$NEWEST" <<<"$SUPPORTED"; then
+            echo "supported=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or close tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEWEST: ${{ steps.versions.outputs.newest }}
+          SUPPORTED: ${{ steps.versions.outputs.supported }}
+        run: |
+          OPEN="$(gh issue list --label app-update --state open --json number,title --jq '.[] | select(.title | contains(env.NEWEST)) | .number')"
+          if [[ "$SUPPORTED" == "true" ]]; then
+            # Shipped — close any stale watch issues.
+            for n in $(gh issue list --label app-update --state open --json number --jq '.[].number'); do
+              gh issue close "$n" --comment "Closing: newest APKPure release $NEWEST is now in Constants.kt AppTargets."
+            done
+            echo "Newest $NEWEST already supported; no action."
+            exit 0
+          fi
+          if [[ -n "$OPEN" ]]; then
+            echo "Issue #$OPEN already tracks $NEWEST; no action."
+            exit 0
+          fi
+          gh issue create --label app-update \
+            --title "feat: Samsung Health $NEWEST released on APKPure" \
+            --body "APKPure lists **$NEWEST** as the newest Samsung Health release; it is not in \`Constants.kt\` AppTargets yet.
+
+          ## Runbook (single loop)
+
+          1. Verify it is a **stable** build, not a beta (check the APKMirror listing).
+          2. \`scripts/version-loop.sh $NEWEST --diff 7.00.6.011 --rea\` — diff + pre-flight + drift evidence.
+          3. If green: add \`AppTarget(version = \"$NEWEST\")\`, build, desktop-verify (\`--patch\`), device-test on Knox 0x1.
+          4. Conventional commit + PR; close this issue.
+
+          Auto-opened by the version-watch workflow."
