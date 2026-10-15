@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/bigyank/morphe-patches-samsung/compare/v1.3.0...v1.4.0) (2026-10-15)
+
+### ✨ New Features
+
+* add dex diff stage, version-watch automation, emulator smoke test ([add054b](https://github.com/bigyank/morphe-patches-samsung/commit/add054b77766a5bac34256f1736ad883435276d2))
+* add hide-home-promotion-panel patch (issue [#6](https://github.com/bigyank/morphe-patches-samsung/issues/6)) ([5fa506b](https://github.com/bigyank/morphe-patches-samsung/commit/5fa506bd8c1522b1e0efbfd9efa986f619689519))
+
 ## [1.4.0-dev.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-10-15)
 
 ### ✨ New Features
