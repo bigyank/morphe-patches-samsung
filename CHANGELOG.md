@@ -1,3 +1,9 @@
+## [1.4.0-dev.2](https://github.com/bigyank/morphe-patches-samsung/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-10-15)
+
+### ✨ New Features
+
+* add dex diff stage, version-watch automation, emulator smoke test ([add054b](https://github.com/bigyank/morphe-patches-samsung/commit/add054b77766a5bac34256f1736ad883435276d2))
+
 ## [1.4.0-dev.1](https://github.com/bigyank/morphe-patches-samsung/compare/v1.3.0...v1.4.0-dev.1) (2026-10-15)
 
 ### ✨ New Features
