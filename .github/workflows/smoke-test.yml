@@ -64,7 +64,10 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          apkeep -a "$PACKAGE@$VERSION" -d apk-pure "$PWD"
+          # acknowledge_dangers: informed consent for apk-pure as the source
+          # (see EFForg/apkeep USAGE-apkpure.md) — this repo patches APKs of
+          # apps the user owns for interoperability
+          apkeep -a "$PACKAGE@$VERSION" -d apk-pure -o 'acknowledge_dangers=true' "$PWD"
           ls -lh "$PACKAGE@$VERSION.apk"
 
       - name: Download patch bundle + patcher

@@ -55,7 +55,7 @@ echo "╭─ [1/3] resolve APK"
 mkdir -p "$APK_DIR"
 if [[ "$VERSION" == "latest" ]]; then
   echo "│ downloading latest (unpinned — verify it is not a beta)"
-  apkeep -a com.sec.android.app.shealth -d apk-pure "$APK_DIR"
+  apkeep -a com.sec.android.app.shealth -d apk-pure -o 'acknowledge_dangers=true' "$APK_DIR"
   APK="$(ls -t "$APK_DIR"/com.sec.android.app.shealth@*.apk | head -1)"
   VERSION="$(basename "$APK" | sed -E 's/.*@([0-9.]+)\.apk/\1/')"
   echo "│ resolved latest → ${VERSION}"
@@ -65,7 +65,7 @@ else
     echo "│ cached: ${APK}"
   else
     echo "│ downloading ${VERSION} via apkeep (APKPure)…"
-    apkeep -a "com.sec.android.app.shealth@${VERSION}" -d apk-pure "$APK_DIR"
+    apkeep -a "com.sec.android.app.shealth@${VERSION}" -d apk-pure -o 'acknowledge_dangers=true' "$APK_DIR"
   fi
 fi
 [[ -f "$APK" ]] || { echo "│ FATAL: APK missing after download: $APK"; exit 1; }
