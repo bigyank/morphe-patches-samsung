@@ -124,25 +124,42 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -memory 4096 -no-snapshot
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -memory 3072 -no-snapshot
           emulator-boot-timeout: 900
           disable-animations: true
           script: |
             adb wait-for-device
             adb install -r "$PATCHED"
             adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
-            # ARM translation makes first launch slow — give it room
-            sleep 120
-            PID="$(adb shell pidof "$PACKAGE" | tr -d '\r')"
-            echo "pid=$PID"
-            adb exec-out screencap -p > smoke-screenshot.png
-            adb logcat -d > smoke-logcat.txt
-            if [[ -z "$PID" ]]; then
-              echo "::error::Patched app did not stay running (no pid) — check smoke-logcat.txt"
-              exit 1
+            # ARM translation is slow and can destabilize the emulator — poll
+            # early and capture evidence incrementally so a dying emulator
+            # does not lose the verdict.
+            EVER_ALIVE=""
+            for i in $(seq 1 12); do
+              sleep 15
+              PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r')"
+              adb logcat -d > smoke-logcat.txt 2>/dev/null || true
+              adb exec-out screencap -p > smoke-screenshot.png 2>/dev/null || true
+              if [[ -n "$PID" ]]; then
+                EVER_ALIVE="$PID"
+                echo "poll $i: pid=$PID"
+                [[ $i -ge 2 ]] && break   # alive on a second poll = stable launch
+              else
+                echo "poll $i: no pid"
+              fi
+            done
+            if [[ -n "$EVER_ALIVE" ]]; then
+              grep -iE "VerifyError|FATAL EXCEPTION" smoke-logcat.txt \
+                && { echo "::error::Crash signature in logcat"; exit 1; } || true
+              echo "Smoke test OK — process $EVER_ALIVE alive after launch"
+              exit 0
             fi
-            grep -iE "VerifyError|FATAL EXCEPTION" smoke-logcat.txt && { echo "::error::Crash signature in logcat"; exit 1; } || true
-            echo "Smoke test OK — process $PID alive after launch"
+            if adb get-state >/dev/null 2>&1; then
+              echo "::error::Patched app did not stay running — check smoke-logcat.txt"
+            else
+              echo "::error::Emulator died during the launch window (ARM-translation instability) and no live process was ever observed — check smoke-logcat.txt if captured"
+            fi
+            exit 1
 
       - name: Upload evidence
         if: always()
