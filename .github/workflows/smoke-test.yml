@@ -2,15 +2,18 @@ name: Smoke test (emulator)
 
 # Desktop-verifiable launch check for a patched Samsung Health APK:
 # download → patch with the released bundle (morphe-desktop CLI) → static
-# verify (verify_patched.py) → install and launch on an arm64 emulator →
-# assert the process stays alive → capture screenshot + logcat.
+# verify (verify_patched.py) → install and launch on an emulator → assert
+# the process stays alive → capture screenshot + logcat.
 #
 # Catches the VerifyError / stub-corruption failure class BEFORE a device
 # flash. It does NOT validate Knox 0x1 behavior, Samsung Account login, or
 # sync — those stay on the physical-device gate.
 #
-# Health ships arm-only ABIs, so this needs an arm64 runner (macos-15) with
-# an arm64-v8a system image — no x86 translation involved.
+# Runner choice: ubuntu-latest + KVM (hosted macOS runners block nested HVF
+# for the arm64 emulator — "HVF error: HV_UNSUPPORTED" on macos-14/15).
+# Health ships arm-only ABIs, so the x86_64 system image runs it through
+# the image's built-in ARM translation (libndk, google_apis API 30+).
+# Slower than native — boot + install + first-launch take minutes.
 
 on:
   workflow_dispatch:
@@ -32,9 +35,7 @@ env:
 
 jobs:
   smoke:
-    # macos-14, NOT 15: macos-15 runners block nested HVF virtualization
-    # ("HVF error: HV_UNSUPPORTED") and the arm64 emulator cannot boot.
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -46,9 +47,13 @@ jobs:
 
       - name: Install tools
         run: |
-          brew install apkeep
-          # macos-15 Python is PEP 668 externally-managed — venv + PATH so the
-          # static-verify step's `python3` resolves to it
+          URL="$(curl -sL https://api.github.com/repos/EFForg/apkeep/releases/latest \
+            | jq -r '.assets[] | select(.name == "apkeep-x86_64-unknown-linux-gnu") | .browser_download_url')"
+          sudo curl -sL -o /usr/local/bin/apkeep "$URL"
+          sudo chmod +x /usr/local/bin/apkeep
+          apkeep --help >/dev/null
+          # Ubuntu 24.04 Python is PEP 668 externally-managed — venv + PATH so
+          # the static-verify step's `python3` resolves to it
           python3 -m venv "$PWD/.venv"
           "$PWD/.venv/bin/pip" install --quiet androguard
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
@@ -101,14 +106,17 @@ jobs:
           PATCHED: ${{ env.PATCHED }}
         with:
           api-level: 34
-          arch: arm64-v8a
-          target: default
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -memory 4096 -no-snapshot
+          disable-animations: true
           script: |
             adb wait-for-device
             adb install -r "$PATCHED"
             adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
-            sleep 45
+            # ARM translation makes first launch slow — give it room
+            sleep 120
             PID="$(adb shell pidof "$PACKAGE" | tr -d '\r')"
             echo "pid=$PID"
             adb exec-out screencap -p > smoke-screenshot.png
