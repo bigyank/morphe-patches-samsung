@@ -50,7 +50,8 @@ jobs:
           python3 -m venv "$PWD/.venv"
           "$PWD/.venv/bin/pip" install --quiet androguard
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          python3 -c "import androguard; print('androguard OK')"
+          # GITHUB_PATH applies to later steps only — check with the venv python
+          "$PWD/.venv/bin/python3" -c "import androguard; print('androguard OK')"
 
       - name: Download Samsung Health APK
         env:
