@@ -133,24 +133,29 @@ jobs:
             adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
             # ARM translation is slow and can destabilize the emulator — poll
             # early and capture evidence incrementally so a dying emulator
-            # does not lose the verdict.
+            # does not lose the verdict. POSIX sh only: the action runs this
+            # through dash, not bash.
             EVER_ALIVE=""
-            for i in $(seq 1 12); do
+            i=0
+            while [ "$i" -lt 12 ]; do
+              i=$((i + 1))
               sleep 15
               PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r')"
               adb logcat -d > smoke-logcat.txt 2>/dev/null || true
               adb exec-out screencap -p > smoke-screenshot.png 2>/dev/null || true
-              if [[ -n "$PID" ]]; then
+              if [ -n "$PID" ]; then
                 EVER_ALIVE="$PID"
                 echo "poll $i: pid=$PID"
-                [[ $i -ge 2 ]] && break   # alive on a second poll = stable launch
+                if [ "$i" -ge 2 ]; then break; fi
               else
                 echo "poll $i: no pid"
               fi
             done
-            if [[ -n "$EVER_ALIVE" ]]; then
-              grep -iE "VerifyError|FATAL EXCEPTION" smoke-logcat.txt \
-                && { echo "::error::Crash signature in logcat"; exit 1; } || true
+            if [ -n "$EVER_ALIVE" ]; then
+              if grep -iE "VerifyError|FATAL EXCEPTION" smoke-logcat.txt; then
+                echo "::error::Crash signature in logcat"
+                exit 1
+              fi
               echo "Smoke test OK — process $EVER_ALIVE alive after launch"
               exit 0
             fi
