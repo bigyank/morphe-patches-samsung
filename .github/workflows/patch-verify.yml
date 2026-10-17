@@ -1,19 +1,15 @@
-name: Smoke test (emulator)
+name: Patch verification
 
-# Desktop-verifiable launch check for a patched Samsung Health APK:
-# download → patch with the released bundle (morphe-desktop CLI) → static
-# verify (verify_patched.py) → install and launch on an emulator → assert
-# the process stays alive → capture screenshot + logcat.
+# CI counterpart of version-loop stage 4 (desktop patch + static verify):
+# download the stock APK, patch it with a released bundle (morphe-desktop
+# CLI), and assert via verify_patched.py that every stub landed — Knox
+# fingerprints, account fetch rewrite, signin string replacement, promotion
+# display stub. ~5 minutes on ubuntu-latest, no emulator, no device.
 #
-# Catches the VerifyError / stub-corruption failure class BEFORE a device
-# flash. It does NOT validate Knox 0x1 behavior, Samsung Account login, or
-# sync — those stay on the physical-device gate.
-#
-# Runner choice: ubuntu-latest + KVM (hosted macOS runners block nested HVF
-# for the arm64 emulator — "HVF error: HV_UNSUPPORTED" on macos-14/15).
-# Health ships arm-only ABIs, so the x86_64 system image runs it through
-# the image's built-in ARM translation (libndk, google_apis API 30+).
-# Slower than native — boot + install + first-launch take minutes.
+# An earlier revision of this workflow also launched the patched APK on an
+# emulator; that half was dropped — hosted runners make arm-app emulation
+# unreliable (HVF blocked on macOS, KVM/adb/ARM-translation instability on
+# Linux). Runtime launch validation stays on the physical Knox 0x1 device.
 
 on:
   workflow_dispatch:
@@ -34,9 +30,9 @@ env:
   PACKAGE: com.sec.android.app.shealth
 
 jobs:
-  smoke:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -53,11 +49,10 @@ jobs:
           sudo chmod +x /usr/local/bin/apkeep
           apkeep --help >/dev/null
           # Ubuntu 24.04 Python is PEP 668 externally-managed — venv + PATH so
-          # the static-verify step's `python3` resolves to it
+          # the verify step's `python3` resolves to it
           python3 -m venv "$PWD/.venv"
           "$PWD/.venv/bin/pip" install --quiet androguard
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          # GITHUB_PATH applies to later steps only — check with the venv python
           "$PWD/.venv/bin/python3" -c "import androguard; print('androguard OK')"
 
       - name: Download Samsung Health APK
@@ -65,8 +60,7 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           # acknowledge_dangers: informed consent for apk-pure as the source
-          # (see EFForg/apkeep USAGE-apkpure.md) — this repo patches APKs of
-          # apps the user owns for interoperability
+          # (see EFForg/apkeep USAGE-apkpure.md)
           apkeep -a "$PACKAGE@$VERSION" -d apk-pure -o 'acknowledge_dangers=true' "$PWD"
           ls -lh "$PACKAGE@$VERSION.apk"
 
@@ -103,42 +97,9 @@ jobs:
             --original "$PACKAGE@$VERSION.apk" \
             --patched "$PATCHED"
 
-      # ubuntu-latest ships /dev/kvm but the runner user lacks group access —
-      # without this the emulator-runner falls back to TCG (-accel off) and
-      # API 34 boot exceeds its timeout. Standard workaround from
-      # ReactiveCircus/android-emulator-runner discussions.
-      - name: Enable KVM for runner user
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          ls -l /dev/kvm
-
-      - name: Emulator launch test
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          PATCHED: ${{ env.PATCHED }}
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -memory 3072 -no-snapshot
-          emulator-boot-timeout: 900
-          disable-animations: true
-          script: |
-            adb wait-for-device
-            adb install -r "$PATCHED"
-            adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
-            sh scripts/emulator_smoke_check.sh
-
-      - name: Upload evidence
-        if: always()
+      - name: Upload patched APK
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-evidence-${{ inputs.version }}
-          path: |
-            smoke-screenshot.png
-            smoke-logcat.txt
-          if-no-files-found: ignore
+          name: patched-${{ inputs.version }}
+          path: ${{ env.PATCHED }}
+          if-no-files-found: error

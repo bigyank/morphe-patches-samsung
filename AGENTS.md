@@ -107,7 +107,7 @@ morphe-patches-samsung/
 ├── patches-list.json                # Auto-updated by release CI — do not hand-edit
 ├── .github/workflows/release.yml    # build + semantic-release
 ├── .github/workflows/version-watch.yml  # daily APKPure poll → auto-issue on new Health release
-├── .github/workflows/smoke-test.yml # manual dispatch: patch + launch patched APK on arm64 emulator
+├── .github/workflows/patch-verify.yml # manual dispatch: patch released bundle + static verify on ubuntu
 ├── README.md                        # User docs
 ├── CONTRIBUTING.md                  # Contributor notes
 ├── AUDIT.md                         # Comparison vs SamsungAppsPatcher + roadmap
@@ -295,8 +295,8 @@ scripts/rea.sh inspect-android-method \
   .cache/apks/com.sec.android.app.shealth@7.00.6.011.apk \
   com.samsung.android.sdk.healthdata.privileged.samsungaccount.SamsungAccountUtils getSamsungAccountId
 
-# Emulator smoke test of a patched APK (manual dispatch on arm64 runner)
-gh workflow run smoke-test.yml --field version=7.00.6.011
+# Patch verification on CI (released bundle vs a stock APK, ~5 min)
+gh workflow run patch-verify.yml --field version=7.00.6.011
 
 # Watch CI
 gh run list --repo bigyank/morphe-patches-samsung --limit 3
@@ -313,8 +313,8 @@ gh run list --repo bigyank/morphe-patches-samsung --limit 3
 - **REA integration:** `rea-agents` CLI 6.5.0 + jadx-headless-mcp 0.7.1 engine (auto-downloaded to `.cache/tools/` by `scripts/rea.sh`). `version-loop.sh --rea` decompiles every drifted fingerprint into `.cache/apks/rea-drift-<version>.md`; validated on 6.32.0.001 (version-expected fingerprint drift explained with decompiled Java, `AccountCountryLookup` correctly reported absent). REA adb commands (`install-adb-package --replace`, `collect-adb-bugreport`) documented in the skill for device sessions — untested, no device attached yet
 - **Dex diff:** `version-loop.sh <ver> --diff <baseline>` (stage 1a, `scripts/dex_diff.py`) — target-set delta between two APKs with per-method body hashes + REA follow-up commands; validated on 7.00.0.107→7.00.6.011 (257 focused rows: `c6r` add, promotion/Knox churn, obfuscation renames)
 - **Version watch:** `.github/workflows/version-watch.yml` — daily APKPure poll via `apkeep -l`; auto-opens an `app-update` issue for untracked releases, auto-closes once the version ships in `Constants.kt`. APKMirror RSS is Cloudflare-blocked (403 probe) — APKPure list is the machine path
-- **Emulator smoke test:** `.github/workflows/smoke-test.yml` — manual dispatch; patches with the released bundle, static-verifies, then installs + launches on a macos-15 arm64 emulator (Health is arm-only), asserting the process stays alive; screenshot + logcat as artifacts. Catches VerifyError-class failures pre-device; does NOT replace the Knox 0x1 device gate
-- **Workflow activation note:** `schedule:`/`workflow_dispatch` workflows register only from the **default branch** — version-watch and smoke-test activated on the v1.4.0 promotion merge. The smoke test's first emulator run is the validation gate for that workflow; treat failures as workflow bugs (`ci:` commits — no release), not patch regressions
+- **Patch verification (CI):** `.github/workflows/patch-verify.yml` — manual dispatch; ubuntu-latest downloads the stock APK, patches with a released bundle (morphe-desktop CLI), and runs `verify_patched.py` (~5 min); uploads the patched APK as artifact. Validated green on 7.00.6.011 with the v1.4.0 bundle. An emulator launch-gate revision was attempted and **dropped** — hosted runners cannot reliably emulate arm-only apps (macOS runners block nested HVF on macos-14/15; Linux ubuntu runners needed KVM udev workarounds, and ARM-translation emulation destabilized the emulator mid-launch); runtime validation stays device-only
+- **Workflow activation note:** `schedule:`/`workflow_dispatch` workflows register only from the **default branch** — version-watch and patch-verify activated on the v1.4.0 promotion merge. Treat CI workflow failures as workflow bugs (`ci:` commits — no release), not patch regressions
 - **Known variant note:** APKPure universal 6.32.0.001 lacks the OOBE gate shapes the APKMirror build has (pre-flight reports them as drift intel: `HomeAppCloseActivity->onCreate`, `gdc->k`); SDK fingerprint stubs still cover Knox
 - **Build auth:** `gh` token carries `read:packages` (device-flow refresh); export both `GITHUB_ACTOR` and `GITHUB_TOKEN` for Gradle — username is required for the GitHub Packages Basic auth pair
 - **Open issues triaged:** #7 Watch4 sync = gate lives in Galaxy Wearable + watch-side signature trust (outside Health dex, documented gap in AUDIT.md); #6 ad panel = feasible dex-only patch (`PromotionDiscoverCardViewModel.j` in `home/promotion/discoverplus/`), not yet implemented; #2/#10 = new-app scope (Health Monitor / Gallery), framework is reusable

@@ -158,10 +158,13 @@ loaded APK directly in the GUI/CLI before editing `Fingerprints.kt`.
 2. Patches the APK headless with morphe-desktop (jar auto-downloaded to `.cache/tools/`, Java 21 via `/opt/homebrew/opt/openjdk@21` if present): `java -jar morphe-desktop-*-all.jar patch -p bundle.mpp app.apk`.
 3. `scripts/verify_patched.py` re-indexes the patched dex and asserts: every hard fingerprint method is now a stub body, the AccountManager redirect landed (6.x `getSamsungAccountId` or 7.x `fetchAccountId$2`), no const-string still references `com.osp.app.signin`, and the promotion display path is stubbed (or the package is absent). Report: `.cache/apks/verify-<version>.json`.
 
-A stage-4 PASS means the dex-level patch is proven; the emulator smoke test
-(workflow `smoke-test.yml`, manual dispatch) additionally proves the patched
-APK launches without crashing — run it before a device flash when touching
-stubber code. The device test (step 6) remains the only runtime-behavior gate.
+A stage-4 PASS means the dex-level patch is proven. The CI counterpart
+(`patch-verify.yml`, manual dispatch) repeats that check on ubuntu-latest with
+a released bundle — use it to confirm the *released* .mpp (not just the local
+build) patches a given version cleanly. Runtime launch validation stays on
+the physical device (step 6): an emulator CI gate was attempted and dropped —
+hosted runners cannot reliably emulate arm-only apps (HVF blocked on macOS,
+KVM/adb/ARM-translation instability on Linux).
 
 ### 4. Add the target
 
