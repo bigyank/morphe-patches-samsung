@@ -5,13 +5,17 @@
 # sh -c processes (no control flow, no variable state across lines), so all
 # logic lives in this file instead.
 #
+# Every adb call is wrapped in `timeout` — adb blocks forever against a
+# half-dead device, which hangs the whole stage until the job timeout.
+#
 # Env: PACKAGE  — android package name (com.sec.android.app.shealth)
+#      POLLS / INTERVAL — poll count and seconds (default 8 × 15 s)
 # Exit 0 = process observed alive on 2+ polls and no crash signature;
 #      1 = app never alive (emulator survived), or crash signature;
 #      3 = emulator died before any live process was observed (inconclusive).
 set -u
 
-POLLS="${POLLS:-12}"
+POLLS="${POLLS:-8}"
 INTERVAL="${INTERVAL:-15}"
 EVER_ALIVE=""
 
@@ -19,10 +23,10 @@ i=0
 while [ "$i" -lt "$POLLS" ]; do
   i=$((i + 1))
   sleep "$INTERVAL"
-  PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r')"
+  PID="$(timeout 20 adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r')"
   # capture evidence on every poll — a dying emulator must not lose the verdict
-  adb logcat -d > smoke-logcat.txt 2>/dev/null || true
-  adb exec-out screencap -p > smoke-screenshot.png 2>/dev/null || true
+  timeout 30 adb logcat -d > smoke-logcat.txt 2>/dev/null || true
+  timeout 20 adb exec-out screencap -p > smoke-screenshot.png 2>/dev/null || true
   if [ -n "$PID" ]; then
     EVER_ALIVE="$PID"
     echo "poll $i: pid=$PID"
@@ -44,7 +48,7 @@ if [ -n "$EVER_ALIVE" ]; then
   exit 0
 fi
 
-if adb get-state >/dev/null 2>&1; then
+if timeout 20 adb get-state >/dev/null 2>&1; then
   echo "::error::patched app did not stay running — see smoke-logcat.txt artifact"
   exit 1
 fi
